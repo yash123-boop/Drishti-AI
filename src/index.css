@@ -1,24 +1,57 @@
+
 @import "tailwindcss";
+
+/* Make dark: classes follow the app's selected theme */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --brand: #7c3aed;
+    --brand-hover: #6d28d9;
+    --brand-soft: #f5f3ff;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
     font-family: var(--font-sans);
   }
 
-  /* High Contrast Mode */
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Accessible keyboard focus */
+  :focus-visible {
+    outline: 3px solid #8b5cf6 !important;
+    outline-offset: 3px !important;
+  }
+
+  /* High Contrast Mode: preserve accessibility override */
   .high-contrast {
     --bg-main: #000000;
     --bg-card: #0a0a0a;
     --text-primary: #ffffff;
-    --text-secondary: #facc15; /* High-vis yellow */
-    --accent: #38bdf8; /* Bright cyan */
+    --text-secondary: #facc15;
+    --accent: #38bdf8;
     --accent-hover: #7dd3fc;
     --border-color: #ffffff;
+
     background-color: #000000 !important;
     color: #ffffff !important;
   }
@@ -37,7 +70,12 @@
     border: 2px solid #ffffff !important;
   }
 
-  /* Text Scale Classes */
+  .high-contrast :focus-visible {
+    outline: 4px solid #facc15 !important;
+    outline-offset: 4px !important;
+  }
+
+  /* Accessibility text scaling */
   .text-scale-normal {
     font-size: 100%;
   }
@@ -50,7 +88,7 @@
     font-size: 135%;
   }
 
-  /* Screen-reader only class */
+  /* Screen-reader-only announcements */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -62,29 +100,114 @@
     white-space: nowrap;
     border-width: 0;
   }
-
-  /* Enhanced focus ring for WCAG 2.2 AAA keyboard navigation */
-  :focus-visible {
-    outline: 3px solid #2563eb !important;
-    outline-offset: 3px !important;
-  }
-
-  .high-contrast :focus-visible {
-    outline: 4px solid #facc15 !important;
-    outline-offset: 4px !important;
-  }
 }
 
-/* Pulsing radar animation for haptic simulation */
+/* Purple-violet accents for existing Tailwind utility classes */
+.bg-blue-600 {
+  background-color: #7c3aed !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: #6d28d9 !important;
+}
+
+.text-blue-600 {
+  color: #7c3aed !important;
+}
+
+.text-blue-500 {
+  color: #8b5cf6 !important;
+}
+
+.text-blue-400 {
+  color: #a78bfa !important;
+}
+
+.bg-blue-50 {
+  background-color: #f5f3ff !important;
+}
+
+.border-blue-200 {
+  border-color: #ddd6fe !important;
+}
+
+.shadow-blue-500\/20 {
+  --tw-shadow-color: rgb(139 92 246 / 20%);
+}
+
+/* Dark theme: deep plum surfaces and violet highlights */
+html.dark .bg-white {
+  background-color: #1c142b !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #10091f !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #251a38 !important;
+}
+
+html.dark .bg-blue-50 {
+  background-color: #2e1b49 !important;
+}
+
+html.dark .text-slate-900 {
+  color: #f5f3ff !important;
+}
+
+html.dark .text-slate-800 {
+  color: #ede9fe !important;
+}
+
+html.dark .text-slate-700 {
+  color: #ddd6fe !important;
+}
+
+html.dark .text-slate-600 {
+  color: #c4b5fd !important;
+}
+
+html.dark .border-slate-200 {
+  border-color: #38284f !important;
+}
+
+html.dark .border-slate-300 {
+  border-color: #49365f !important;
+}
+
+html.dark .bg-slate-800 {
+  background-color: #30213f !important;
+}
+
+html.dark .bg-slate-900 {
+  background-color: #1c142b !important;
+}
+
+html.dark .border-slate-800 {
+  border-color: #38284f !important;
+}
+
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #30213f !important;
+}
+
+html.dark .hover\:text-slate-900:hover {
+  color: #ffffff !important;
+}
+
+/* Haptic radar animation */
 @keyframes haptic-pulse {
   0% {
     transform: scale(0.95);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.08);
     opacity: 1;
   }
+
   100% {
     transform: scale(0.95);
     opacity: 0.8;
@@ -93,4 +216,16 @@
 
 .animate-haptic {
   animation: haptic-pulse 0.4s ease-in-out infinite;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
