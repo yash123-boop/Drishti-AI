@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  /* High Contrast Mode */
+  .high-contrast {
+    --bg-main: #000000;
+    --bg-card: #0a0a0a;
+    --text-primary: #ffffff;
+    --text-secondary: #facc15; /* High-vis yellow */
+    --accent: #38bdf8; /* Bright cyan */
+    --accent-hover: #7dd3fc;
+    --border-color: #ffffff;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+
+  .high-contrast * {
+    border-color: #ffffff !important;
+  }
+
+  .high-contrast .card-surface {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+  }
+
+  .high-contrast button {
+    border: 2px solid #ffffff !important;
+  }
+
+  /* Text Scale Classes */
+  .text-scale-normal {
+    font-size: 100%;
+  }
+
+  .text-scale-large {
+    font-size: 118%;
+  }
+
+  .text-scale-xlarge {
+    font-size: 135%;
+  }
+
+  /* Screen-reader only class */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Enhanced focus ring for WCAG 2.2 AAA keyboard navigation */
+  :focus-visible {
+    outline: 3px solid #2563eb !important;
+    outline-offset: 3px !important;
+  }
+
+  .high-contrast :focus-visible {
+    outline: 4px solid #facc15 !important;
+    outline-offset: 4px !important;
+  }
+}
+
+/* Pulsing radar animation for haptic simulation */
+@keyframes haptic-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.animate-haptic {
+  animation: haptic-pulse 0.4s ease-in-out infinite;
+}

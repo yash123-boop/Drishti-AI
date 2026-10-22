@@ -1,0 +1,761 @@
+# MASTER BUILD PROMPT — DRISHTI AI COMPLETE WORKING PROTOTYPE
+
+## 1. YOUR ROLE AND OBJECTIVE
+
+Act as a senior full-stack engineer, AI application developer, accessibility specialist, UI/UX designer, software architect, and QA tester.
+
+Your task is to BUILD THE COMPLETE DRISHTI AI PROJECT, not just its frontend, not just my assigned module, and not merely a visual mockup.
+
+Read the attached Drishti AI project brief PDF carefully. Understand its problem statement, proposed solution, features, target users, technology stack, constraints, and expected impact before implementing the application.
+
+Then create a complete, functional, end-to-end web prototype that integrates the work of all four team members:
+
+1. Frontend and UI development.
+2. Core application logic, route management, journey engine, and integration.
+3. Voice recognition, text-to-speech, and bus-number OCR.
+4. Accessibility, error handling, responsive behavior, and testing.
+
+**Your final deliverable must be one integrated, runnable website in which these modules actually communicate with one another.**
+
+Do not stop after giving me an implementation plan, folder structure, sample code, or a homepage. Create the actual project files and implement the complete application.
+
+If you have access to a coding workspace or repository, create and modify the files directly in it. If you cannot edit files directly, provide the complete contents of every required file rather than incomplete snippets.
+
+Do not ask unnecessary questions. Make reasonable decisions based on the attached project brief and implement the strongest practical MVP possible within the constraints.
+
+---
+
+## 2. PROJECT UNDERSTANDING
+
+### Project name: Drishti AI
+
+**Drishti AI is a voice-first, camera-assisted public transportation companion designed for blind and visually impaired commuters.**
+
+Visually impaired passengers may struggle to identify bus numbers, find the correct bus, follow their journey, identify upcoming stops, and know when they should get off.
+
+Drishti AI aims to make this process easier through an accessible, browser-based assistant.
+
+The core journey must be:
+
+User opens the application  
+→ Enters a destination using voice or text  
+→ Selects an available demonstration route  
+→ Scans or uploads a bus-number image  
+→ OCR identifies the possible bus number  
+→ User confirms or corrects the recognized number  
+→ Application checks whether the bus matches the selected route  
+→ User starts the journey  
+→ Application announces the current and next stops  
+→ Application alerts the user when the destination is approaching or reached  
+→ User can access a confirmation-based emergency assistance flow.
+
+Every essential step must work. Do not create disconnected screens that merely look functional.
+
+### Intended users
+
+- Blind and visually impaired commuters.
+- Low-vision users who need larger text and high contrast.
+- Students and working professionals using public transportation.
+- People who benefit from spoken instructions and simplified navigation.
+
+Accessibility must be a central engineering requirement, not an optional visual enhancement.
+
+---
+
+## 3. TECHNOLOGY REQUIREMENTS
+
+Use this technology stack:
+
+- HTML5.
+- CSS3.
+- Vanilla JavaScript with ES modules.
+- Web Speech API for voice recognition where supported.
+- Browser SpeechSynthesis API for spoken guidance.
+- Tesseract.js for browser-based OCR.
+- Local JSON data for demonstration routes and stops.
+- Browser camera capabilities where supported.
+- Git-compatible project structure.
+- VS Code and Live Server compatibility.
+
+Avoid unnecessary frameworks and dependencies. The application should remain lightweight and suitable for an eight-hour buildathon.
+
+### Strict constraints
+
+- No complex backend server.
+- No paid APIs or paid subscriptions.
+- No API keys that require payment.
+- No custom machine-learning model training.
+- No live public transportation API dependency.
+- No real-time GPS tracking requirement.
+- No database server requirement.
+- No fake claims that simulated information is real-time transit data.
+- No automatic emergency calls or messages.
+
+Load route data from a local JSON file through a local development server.
+
+Use a CDN for Tesseract.js if necessary. If the OCR library cannot load, the rest of the app must remain usable and provide a manual bus-number entry fallback.
+
+Clearly distinguish functional capabilities from simulated behavior.
+
+---
+
+## 4. COMPLETE PROJECT FOLDER STRUCTURE
+
+Create all required folders and files using the following structure. You may add small supporting files when genuinely necessary, but do not omit any core module.
+
+Drishti-AI/
+│
+├── index.html
+├── README.md
+├── .gitignore
+│
+├── css/
+│   ├── style.css
+│   ├── components.css
+│   ├── responsive.css
+│   └── accessibility.css
+│
+├── js/
+│   ├── app.js
+│   │
+│   ├── ui/
+│   │   ├── screens.js
+│   │   ├── components.js
+│   │   └── notifications.js
+│   │
+│   ├── voice/
+│   │   ├── speechRecognition.js
+│   │   └── speechSynthesis.js
+│   │
+│   ├── ocr/
+│   │   ├── busOCR.js
+│   │   └── textParser.js
+│   │
+│   ├── routes/
+│   │   ├── routeData.js
+│   │   ├── routeMatcher.js
+│   │   └── routeSelector.js
+│   │
+│   ├── journey/
+│   │   ├── journeyEngine.js
+│   │   ├── stopManager.js
+│   │   └── destinationAlert.js
+│   │
+│   ├── emergency/
+│   │   └── emergencyAssist.js
+│   │
+│   ├── accessibility/
+│   │   ├── accessibility.js
+│   │   ├── keyboardNavigation.js
+│   │   └── screenReader.js
+│   │
+│   ├── testing/
+│   │   └── validation.js
+│   │
+│   └── utils/
+│       ├── constants.js
+│       └── helpers.js
+│
+├── data/
+│   └── routes.json
+│
+├── assets/
+│   ├── images/
+│   ├── icons/
+│   └── audio/
+│
+└── docs/
+    ├── architecture.md
+    └── demo-flow.md
+
+Empty asset folders are acceptable when no custom assets are required.
+
+---
+
+## 5. COMPLETE FRONTEND — MEMBER 1 WORK
+
+Create a polished, modern, responsive web interface.
+
+### Design direction
+
+Use a clean, light accessibility-first theme with:
+
+- High-contrast dark text.
+- Blue or teal accent colors.
+- Clear visual hierarchy.
+- Generous spacing.
+- Readable typography.
+- Large touch-friendly buttons.
+- Rounded cards with restrained shadows.
+- Simple, recognisable icons.
+- Consistent spacing and component styles.
+- Minimal decorative elements.
+- Useful empty, loading, success, warning, and error states.
+
+Avoid a generic SaaS dashboard design. The application should feel like a real, usable assistive technology product.
+
+### Required screens
+
+1. Welcome / onboarding screen.
+2. Destination input screen.
+3. Available route selection screen.
+4. Bus scanner screen.
+5. OCR processing screen.
+6. Bus-number review and confirmation screen.
+7. Wrong-bus / route-mismatch screen.
+8. Journey guidance screen.
+9. Next-stop announcement state.
+10. Approaching-destination alert.
+11. Destination reached screen.
+12. Emergency assistance screen.
+13. Error and recovery states.
+
+Screens can be implemented as sections inside a single-page application. Use clear transitions between them without unnecessary page reloads.
+
+### Interface behavior
+
+All interactive buttons and controls must perform their stated actions.
+
+Do not include dead buttons, fake links, decorative controls that do nothing, or unexplained placeholders.
+
+Users must be able to go back, correct entered information, retry failed operations, and restart the demonstration journey.
+
+---
+
+## 6. CORE APPLICATION LOGIC — MEMBER 2 WORK
+
+Implement the core application engine in `js/app.js`, connected to the route and journey modules.
+
+### A. Route data
+
+Store simulated routes in `data/routes.json`.
+
+Each route should contain appropriate fields, including:
+
+- Route ID.
+- Bus number.
+- Starting stop.
+- Destination.
+- Ordered list of stops.
+
+Create a small but varied demonstration dataset with multiple routes and overlapping stops so that route selection and wrong-bus detection can genuinely be tested.
+
+All route information must be labelled as demonstration data, not verified live transport information.
+
+### B. Route selection
+
+Implement `routeSelector.js` to:
+
+- Accept the user's destination.
+- Normalize case and surrounding whitespace.
+- Search matching demonstration routes.
+- Handle simple spelling and case variations reasonably.
+- Return matching routes.
+- Provide a clear message when no route matches.
+
+The user must be able to select one of the available route cards.
+
+### C. Bus-route matching
+
+Implement `routeMatcher.js`.
+
+The OCR module must provide a candidate bus number. The route matcher must independently compare the candidate with the selected route.
+
+Expected outcomes:
+
+- Match found.
+- Wrong bus.
+- Unrecognised or missing bus number.
+- User corrected the OCR result.
+
+Normalize bus-number formatting carefully, without treating genuinely different bus identifiers as equivalent.
+
+Show clear results on the interface and provide spoken warnings where appropriate.
+
+A wrong bus must never start the journey automatically.
+
+### D. Journey engine
+
+Implement `journeyEngine.js` to manage the journey lifecycle.
+
+Required functionality:
+
+- Start journey.
+- Track demonstration journey state.
+- Pause journey.
+- Resume journey.
+- Advance to the next demonstration stop.
+- End journey.
+- Reset and restart.
+
+Maintain coherent state, including:
+
+- Selected route.
+- Confirmed bus number.
+- Current stop index.
+- Current stop.
+- Next stop.
+- Journey status.
+- Destination status.
+
+Implement `stopManager.js` for stop progression and destination checks.
+
+Because live GPS is outside the MVP, use a clear **Simulate Next Stop** control to advance the journey. You may include optional timed simulation, but never pretend the app knows the user's actual location.
+
+The journey must follow the stop order defined in the selected route.
+
+### E. Destination alert
+
+Implement `destinationAlert.js`.
+
+When the destination is approaching, show a prominent alert and announce it using speech synthesis when available.
+
+When the destination is reached in the simulation:
+
+- Show a destination-reached screen.
+- Speak a clear announcement.
+- Prevent duplicate alerts.
+- Offer an option to end or restart the journey.
+
+Make sure the next-stop and destination logic works correctly at the first stop, intermediate stops, and final stop.
+
+### F. Integration contract
+
+`app.js` must coordinate all modules through clear functions and events.
+
+The UI should display state supplied by the application engine, not independently invent route or journey data.
+
+Do not duplicate business logic across frontend components.
+
+Use one consistent source of truth for the current route and journey state.
+
+---
+
+## 7. VOICE RECOGNITION AND SPEECH OUTPUT — MEMBER 3 WORK
+
+### A. Speech recognition
+
+Implement `js/voice/speechRecognition.js`.
+
+Allow users to press a microphone button and speak a destination, for example:
+
+“Take me to Hazratganj.”
+
+Requirements:
+
+- Request microphone permission only when needed.
+- Recognise speech where the browser supports it.
+- Extract or clean the destination text appropriately.
+- Display the recognised result.
+- Let the user edit or confirm the result.
+- Handle denied permissions.
+- Handle unsupported browsers.
+- Handle no-speech and recognition errors.
+- Provide a manual text-input alternative.
+
+Do not claim browser support where it does not exist.
+
+### B. Speech synthesis
+
+Implement `js/voice/speechSynthesis.js`.
+
+Create reusable functions to speak application messages, including:
+
+- Welcome message.
+- Destination recognised.
+- Available routes found.
+- Bus scanning instructions.
+- Correct bus confirmation.
+- Wrong-bus warning.
+- Journey started.
+- Current stop.
+- Next stop.
+- Destination approaching.
+- Destination reached.
+- Emergency confirmation prompt.
+- Helpful error and recovery messages.
+
+Add controls to repeat or stop spoken announcements where practical.
+
+Avoid reading large blocks of interface text aloud automatically. Spoken messages should be brief and useful.
+
+### C. OCR implementation
+
+Implement `js/ocr/busOCR.js` with Tesseract.js.
+
+Users must be able to:
+
+1. Upload an image of a bus-number board.
+2. Use the device camera when supported and permitted.
+3. Capture an image from a live camera preview.
+4. Run OCR on the captured or uploaded image.
+5. See progress while OCR runs.
+6. View detected text and the candidate bus number.
+7. Correct the candidate number manually.
+8. Retry after failure.
+
+Show an image preview and helpful instructions.
+
+Implement `textParser.js` to clean OCR text and extract plausible bus-number candidates from noisy recognition output. Account for extra whitespace, line breaks, and common OCR noise without silently turning an uncertain result into a confirmed one.
+
+Display OCR confidence only when the OCR library provides a usable value. Do not invent confidence scores.
+
+**OCR is not automatically authoritative.** The user must confirm or correct the candidate bus number before route matching.
+
+If an image does not contain a readable bus number, explain the problem and present retry and manual-entry options.
+
+Do not make OCR failure block the entire journey.
+
+---
+
+## 8. ACCESSIBILITY AND SAFETY — MEMBER 4 WORK
+
+Implement the following modules.
+
+### A. Accessibility controls
+
+In `accessibility.js`, provide practical controls for:
+
+- Increasing text size.
+- Decreasing text size.
+- Enabling high contrast.
+- Returning to default appearance.
+- Speaking helpful instructions where supported.
+
+Persist harmless visual preferences locally if practical.
+
+### B. Keyboard navigation
+
+Implement `keyboardNavigation.js`.
+
+Ensure:
+
+- All primary controls are keyboard accessible.
+- Focus indicators are clearly visible.
+- Screen transitions have sensible focus management.
+- Dialogs can be operated and dismissed using the keyboard.
+- Keyboard interaction does not accidentally activate unrelated actions.
+
+### C. Screen-reader support
+
+Implement `screenReader.js` and appropriate markup.
+
+Use semantic HTML, descriptive labels, accessible button names, clear heading order, and suitable ARIA live regions for important status changes.
+
+Avoid excessive or duplicate announcements.
+
+Never depend on color alone to communicate application status.
+
+### D. Emergency assistance
+
+Implement `emergencyAssist.js`.
+
+Create a clearly labelled emergency assistance flow with:
+
+1. An assistance button.
+2. A confirmation screen or dialog.
+3. Clear information about what happens next.
+4. A cancel action.
+5. A final demonstration result after confirmation.
+
+Never automatically place calls, send messages, or claim that emergency services were contacted.
+
+If the prototype does not have verified contacts or a real assistance integration, clearly state that the feature is a demonstration and explain its limitations.
+
+Provide safe, understandable recovery options if the user opens the emergency interface accidentally.
+
+### E. Testing and validation
+
+Implement `validation.js` to test or validate important application rules, including:
+
+- Missing destination.
+- Unknown destination.
+- No matching routes.
+- Valid route selection.
+- Correct bus number.
+- Wrong bus number.
+- Empty OCR output.
+- User-corrected OCR result.
+- Starting a journey only after a valid match.
+- Stop progression.
+- Final destination detection.
+- Duplicate destination-alert prevention.
+- Resetting and restarting the journey.
+- Missing browser API support.
+
+Keep testing logic separate from production UI logic.
+
+---
+
+## 9. MODULE COMMUNICATION AND ARCHITECTURE
+
+The final implementation must integrate all team members' work rather than merely creating their folders.
+
+Use this data flow:
+
+USER INPUT  
+↓  
+VOICE RECOGNITION OR MANUAL DESTINATION  
+↓  
+ROUTE SELECTION MODULE  
+↓  
+SELECTED DEMONSTRATION ROUTE  
+↓  
+CAMERA / IMAGE UPLOAD  
+↓  
+OCR ENGINE  
+↓  
+BUS-NUMBER PARSING AND USER CONFIRMATION  
+↓  
+ROUTE MATCHER  
+↓  
+MATCH RESULT  
+↓  
+JOURNEY ENGINE  
+↓  
+STOP MANAGER  
+↓  
+SPOKEN NEXT-STOP GUIDANCE  
+↓  
+DESTINATION ALERT  
+↓  
+JOURNEY COMPLETED
+
+Accessibility, notifications, keyboard navigation, and error handling must work across this entire flow.
+
+Define predictable inputs and outputs for each module.
+
+For example, the OCR module should return a structured result containing the recognised text, candidate bus number, and available confidence information. The route matcher should receive the confirmed bus number and selected route and return a structured match result.
+
+Do not tightly couple individual modules to one another's internal variables.
+
+Use ES modules consistently. Add the correct `export` and `import` statements and ensure that all required scripts are connected to `index.html`.
+
+Avoid circular imports, undeclared variables, duplicate event handlers, and duplicated sources of application state.
+
+---
+
+## 10. DEMONSTRATION ROUTE DATA
+
+Create enough fictional demonstration routes to exercise the application's actual logic.
+
+Include:
+
+- At least four demonstration routes.
+- Multiple ordered stops for each route.
+- Different bus numbers.
+- Some shared stops between routes.
+- Destinations that occur on more than one route.
+- A destination that does not exist in the dataset.
+
+Use consistent identifiers and data formats throughout the application.
+
+The data must allow a judge to demonstrate both a correct-bus scenario and a wrong-bus scenario without modifying source code.
+
+Clearly identify all demonstration routes as fictional or simulated. Do not invent claims that the sample routes reflect actual bus services or timetables.
+
+---
+
+## 11. REQUIRED END-TO-END DEMO
+
+The complete working prototype must support this presentation flow:
+
+### Scenario 1: Successful journey
+
+1. Open Drishti AI.
+2. Start the accessible journey flow.
+3. Enter “Hazratganj” using voice or manual input.
+4. Display routes matching the destination.
+5. Select a route.
+6. Upload a sample bus-number image or use manual number entry.
+7. Run OCR if available.
+8. Show the candidate bus number and request confirmation.
+9. Match the confirmed number against the selected route.
+10. Show a successful bus match.
+11. Start the journey.
+12. Announce the current stop.
+13. Press Simulate Next Stop.
+14. Show and speak the next stop.
+15. Repeat until the destination-approaching alert appears.
+16. Advance the simulation to destination reached.
+17. Announce completion and offer a restart option.
+
+### Scenario 2: Wrong bus
+
+1. Select a route.
+2. Enter or confirm a bus number belonging to a different route.
+3. Show a clear wrong-bus warning.
+4. Speak the warning when speech synthesis is available.
+5. Prevent the journey from starting.
+6. Allow the user to retry scanning or correct the bus number.
+
+### Scenario 3: OCR failure
+
+1. Upload an image that does not contain a readable bus number.
+2. Show an honest OCR-failure message.
+3. Allow retry or manual bus-number entry.
+4. Continue the journey only when the confirmed number passes route matching.
+
+### Scenario 4: Accessibility
+
+1. Increase the text size.
+2. Enable high contrast.
+3. Navigate primary controls using the keyboard.
+4. Verify that controls have meaningful accessible labels.
+5. Verify that important state changes are announced accessibly.
+6. Return to default visual settings.
+
+### Scenario 5: Emergency assistance
+
+1. Open the emergency assistance screen.
+2. Show the confirmation step.
+3. Demonstrate both cancellation and confirmation.
+4. Display an explicit notice that no real call or message is sent.
+
+Every scenario must be reproducible during a buildathon presentation.
+
+---
+
+## 12. ERROR HANDLING AND FALLBACKS
+
+The application must not crash simply because a browser API is unavailable or an operation fails.
+
+Handle at least:
+
+- Speech recognition unsupported.
+- Microphone permission denied.
+- Camera permission denied.
+- Camera unavailable.
+- OCR library failed to load.
+- OCR result empty or uncertain.
+- Invalid uploaded file.
+- Route JSON failed to load.
+- Destination not found.
+- No matching route.
+- Wrong bus.
+- Invalid journey state.
+- Stop list completed.
+- Speech synthesis unavailable.
+- Rapid or repeated button clicks.
+- User exits or resets a journey midway.
+
+Display concise, helpful messages and explain how the user can recover.
+
+Use sensible loading indicators during OCR and other asynchronous operations. Disable only the controls that must be disabled during a particular operation.
+
+Do not leave the application stuck in a loading state after an error.
+
+---
+
+## 13. PROJECT DOCUMENTATION
+
+Create a useful `README.md` containing:
+
+- Project overview.
+- Problem statement.
+- Features.
+- Technology stack.
+- Folder structure.
+- Installation and setup instructions.
+- How to open the project using VS Code Live Server.
+- Browser permission requirements.
+- How to test voice recognition.
+- How to test OCR.
+- How to use manual fallbacks.
+- How to run the complete demonstration.
+- Known limitations.
+- Explanation of simulated data and the absence of live GPS/transit integration.
+- Contributions of all four team members.
+
+Create `docs/architecture.md` explaining modules, responsibilities, and data flow.
+
+Create `docs/demo-flow.md` containing a step-by-step buildathon demonstration script, including successful journey, wrong bus, OCR failure, accessibility, and emergency scenarios.
+
+Document team ownership as follows:
+
+- Ritik Pathak — Frontend and UI components.
+- Yash Srivastava — Core application logic, route management, journey engine, and integration.
+- Akhand Pratap Singh — Voice recognition, speech synthesis, OCR, and text parsing.
+- Mohamad Rehan — Accessibility, keyboard navigation, screen-reader support, validation, and testing.
+
+These are logical ownership boundaries. The final product must still operate as one integrated application.
+
+---
+
+## 14. IMPLEMENTATION AND QUALITY RULES
+
+Follow these mandatory instructions:
+
+1. Build all files required for the actual application.
+2. Implement real JavaScript behavior, not placeholder functions.
+3. Connect every major UI control to working logic.
+4. Ensure every module can import and export its dependencies correctly.
+5. Load the local route JSON through a development server.
+6. Use appropriate error handling for asynchronous operations.
+7. Avoid unnecessary libraries and backend infrastructure.
+8. Do not replace required functionality with static screenshots or simulated success messages.
+9. Simulate only the things that are explicitly outside the MVP, such as live location and real transit feeds.
+10. Keep the code readable and reasonably commented.
+11. Do not omit complex modules merely because they take longer to implement.
+12. Do not stop after the first screen or the first successful build.
+13. Do not provide pseudocode instead of working implementations.
+14. Do not claim a feature was tested if you did not actually test it.
+15. Do not expose secrets, paid API keys, or unnecessary personal information.
+16. Ensure the website can be restarted and demonstrated repeatedly.
+
+Prefer native browser capabilities and a clear modular architecture rather than unnecessary complexity.
+
+---
+
+## 15. FINAL VERIFICATION
+
+Before declaring the project complete, inspect the files and verify the following:
+
+- The expected folder structure exists.
+- All referenced JavaScript modules exist.
+- Every import points to the correct file.
+- The main page loads without obvious syntax or module errors.
+- The stylesheet files are correctly linked.
+- The route JSON uses valid JSON syntax.
+- The route selection flow works with the local dataset.
+- Correct-bus matching works.
+- Wrong-bus matching prevents journey start.
+- Manual destination input works without speech recognition.
+- Manual bus-number entry works without OCR.
+- OCR processing has proper loading and failure handling.
+- Journey progression follows the selected route's stop order.
+- Destination alerts trigger at the correct point and do not repeat unnecessarily.
+- Emergency confirmation is explicit and sends no real calls or messages.
+- Accessibility controls actually change the interface.
+- The application works at mobile and desktop viewport widths.
+- Reset and restart do not leave stale journey state behind.
+- README instructions are sufficient for another team member to run the project.
+
+If your environment supports terminal access, run the available checks and test the application. Fix errors you discover before finishing. If browser-based testing or a particular API test is unavailable, state that limitation honestly instead of claiming complete verification.
+
+---
+
+## 16. FINAL DELIVERABLE
+
+Deliver the complete Drishti AI repository containing:
+
+- The entire working frontend.
+- All four team members' modules.
+- Integrated voice and OCR functionality.
+- Route matching and journey management.
+- Accessibility and error handling.
+- Demonstration data.
+- Documentation.
+- Setup instructions.
+- A reproducible presentation flow.
+
+At the end, provide:
+
+1. The final project tree.
+2. A concise summary of implemented features.
+3. The exact steps to run the application.
+4. The browser permissions required for testing.
+5. The end-to-end testing results and any limitations.
+6. A list of any features that could not be fully verified.
+
+**FINAL INSTRUCTION: Do not just tell me how to build Drishti AI. Build the entire integrated, functional prototype. Complete all the required modules, connect them, and make the application ready for a buildathon demonstration.**

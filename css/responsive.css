@@ -1,0 +1,11 @@
+/* Drishti AI Responsive Layout */
+@media (max-width: 640px) {
+  .mic-button {
+    width: 96px;
+    height: 96px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+}

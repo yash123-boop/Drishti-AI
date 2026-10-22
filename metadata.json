@@ -1,0 +1,6 @@
+{
+  "name": "Drishti AI — Accessible Transit Companion",
+  "description": "A voice-first, camera-assisted travel companion for blind and visually impaired commuters with real-time audio navigation, tactile haptic feedback, offline mapping, bus-number OCR, and emergency SOS.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
