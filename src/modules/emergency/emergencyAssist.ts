@@ -135,16 +135,14 @@ class EmergencyAssistManager {
   public triggerEmergencyBroadcast(contacts: EmergencyContact[]): EmergencyContact[] {
     this.startSiren();
     audioChimes.play('sos');
-    speechSynth.speak(
-      'Emergency broadcast initiated. Audible siren active. Location details sent to registered emergency contacts.'
-    );
+    speechSynth.speakMessage('emergencyBroadcast');
 
     return contacts.map((c) => ({ ...c, isNotified: true }));
   }
 
   public cancelEmergency() {
     this.stopSiren();
-    speechSynth.speak('Emergency alert cancelled.');
+    speechSynth.speakMessage('emergencyCancelled');
   }
 }
 

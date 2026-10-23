@@ -21,6 +21,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'Main Buildathon Scenario',
     techShuttle: 'Tech Shuttle Line',
     expressRoute: 'Express Route',
+    badge: 'Voice-First Accessible Transit',
+    sayDestination: 'Please say your destination.',
+    recognized: 'Recognized',
   },
   'hi-IN': {
     title: 'आप कहाँ जाना चाहते हैं?',
@@ -34,6 +37,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'मुख्य उदाहरण',
     techShuttle: 'टेक शटल लाइन',
     expressRoute: 'एक्सप्रेस रूट',
+    badge: 'आवाज़ आधारित सुलभ यात्रा',
+    sayDestination: 'कृपया अपना गंतव्य बोलें।',
+    recognized: 'पहचाना गया',
   },
   'bn-IN': {
     title: 'আপনি কোথায় যেতে চান?',
@@ -47,6 +53,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'মূল উদাহরণ',
     techShuttle: 'টেক শাটল লাইন',
     expressRoute: 'এক্সপ্রেস রুট',
+    badge: 'কণ্ঠস্বর-নির্ভর সহজ যাত্রা',
+    sayDestination: 'আপনার গন্তব্য বলুন।',
+    recognized: 'শনাক্ত হয়েছে',
   },
   'mr-IN': {
     title: 'तुम्हाला कुठे जायचे आहे?',
@@ -60,6 +69,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'मुख्य उदाहरण',
     techShuttle: 'टेक शटल मार्ग',
     expressRoute: 'एक्सप्रेस मार्ग',
+    badge: 'आवाज-आधारित सुलभ प्रवास',
+    sayDestination: 'कृपया तुमचे ठिकाण सांगा.',
+    recognized: 'ओळखले',
   },
   'ta-IN': {
     title: 'நீங்கள் எங்கு செல்ல விரும்புகிறீர்கள்?',
@@ -73,6 +85,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'முக்கிய எடுத்துக்காட்டு',
     techShuttle: 'டெக் ஷட்டில் வழி',
     expressRoute: 'விரைவு வழி',
+    badge: 'குரல் வழி அணுகக்கூடிய பயணம்',
+    sayDestination: 'உங்கள் சேருமிடத்தைச் சொல்லுங்கள்.',
+    recognized: 'அடையாளம் காணப்பட்டது',
   },
   'te-IN': {
     title: 'మీరు ఎక్కడికి వెళ్లాలనుకుంటున్నారు?',
@@ -86,6 +101,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'ప్రధాన ఉదాహరణ',
     techShuttle: 'టెక్ షటిల్ మార్గం',
     expressRoute: 'ఎక్స్‌ప్రెస్ మార్గం',
+    badge: 'వాయిస్ ఆధారిత సులభ ప్రయాణం',
+    sayDestination: 'మీ గమ్యస్థానాన్ని చెప్పండి.',
+    recognized: 'గుర్తించబడింది',
   },
   'kn-IN': {
     title: 'ನೀವು ಎಲ್ಲಿಗೆ ಪ್ರಯಾಣಿಸಲು ಬಯಸುತ್ತೀರಿ?',
@@ -99,6 +117,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'ಮುಖ್ಯ ಉದಾಹರಣೆ',
     techShuttle: 'ಟೆಕ್ ಶಟಲ್ ಮಾರ್ಗ',
     expressRoute: 'ಎಕ್ಸ್‌ಪ್ರೆಸ್ ಮಾರ್ಗ',
+    badge: 'ಧ್ವನಿ ಆಧಾರಿತ ಸುಲಭ ಪ್ರಯಾಣ',
+    sayDestination: 'ನಿಮ್ಮ ಗಮ್ಯಸ್ಥಾನವನ್ನು ಹೇಳಿ.',
+    recognized: 'ಗುರುತಿಸಲಾಗಿದೆ',
   },
   'ml-IN': {
     title: 'നിങ്ങൾ എവിടേക്കാണ് പോകാൻ ആഗ്രഹിക്കുന്നത്?',
@@ -112,6 +133,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'പ്രധാന ഉദാഹരണം',
     techShuttle: 'ടെക് ഷട്ടിൽ റൂട്ട്',
     expressRoute: 'എക്സ്പ്രസ് റൂട്ട്',
+    badge: 'ശബ്ദം മുഖേനയുള്ള എളുപ്പ യാത്ര',
+    sayDestination: 'നിങ്ങളുടെ ലക്ഷ്യസ്ഥാനം പറയുക.',
+    recognized: 'തിരിച്ചറിഞ്ഞു',
   },
   'gu-IN': {
     title: 'તમે ક્યાં જવા માંગો છો?',
@@ -125,6 +149,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'મુખ્ય ઉદાહરણ',
     techShuttle: 'ટેક શટલ માર્ગ',
     expressRoute: 'એક્સપ્રેસ માર્ગ',
+    badge: 'અવાજ આધારિત સુલભ મુસાફરી',
+    sayDestination: 'કૃપા કરીને તમારું ગંતવ્ય બોલો.',
+    recognized: 'ઓળખાયું',
   },
   'pa-IN': {
     title: 'ਤੁਸੀਂ ਕਿੱਥੇ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ?',
@@ -138,6 +165,9 @@ const translations: Record<string, Record<string, string>> = {
     mainScenario: 'ਮੁੱਖ ਉਦਾਹਰਨ',
     techShuttle: 'ਟੈਕ ਸ਼ਟਲ ਰੂਟ',
     expressRoute: 'ਐਕਸਪ੍ਰੈੱਸ ਰੂਟ',
+    badge: 'ਆਵਾਜ਼ ਰਾਹੀਂ ਸੁਗਮ ਸਫ਼ਰ',
+    sayDestination: 'ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਮੰਜ਼ਿਲ ਬੋਲੋ।',
+    recognized: 'ਪਛਾਣਿਆ ਗਿਆ',
   },
 };
 interface DestinationScreenProps {
@@ -166,12 +196,12 @@ const t = translations[language] ?? translations['en-IN'];
     audioChimes.play('tap');
     hapticEngine.tap();
     setVoiceError(null);
-    setVoiceTranscript('Listening... Please say your destination.');
+    setVoiceTranscript(`${t.listening} ${t.sayDestination}`);
 
     speechRecognition.startListening(
       (result) => {
         setIsListening(false);
-        setVoiceTranscript(`Recognized: "${result.transcript}"`);
+        setVoiceTranscript(`${t.recognized}: "${result.transcript}"`);
         setInputText(result.cleanedDestination);
         audioChimes.play('success');
         hapticEngine.tap();
@@ -203,13 +233,19 @@ const t = translations[language] ?? translations['en-IN'];
     onSearch(inputText.trim());
   };
 
+  const handleQuickSelect = (destination: string) => {
+    setInputText(destination);
+    speechSynth.announceDestinationRecognized(destination);
+    onSearch(destination);
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8 sm:py-12">
       {/* Title & Accessible Instruction */}
       <div className="text-center space-y-4 mb-10">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-xs font-bold tracking-wide">
           <Navigation className="w-3.5 h-3.5" />
-          Voice-First Accessible Transit
+          {t.badge}
         </div>
        <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white">
   {t.title}
@@ -245,7 +281,7 @@ const t = translations[language] ?? translations['en-IN'];
       <div className="flex flex-col items-center justify-center mb-10">
         <button
           onClick={handleStartVoice}
-          aria-label={isListening ? 'Microphone active, listening for destination' : 'Tap to speak your destination (Shortcut: Space or Alt+V)'}
+          aria-label={isListening ? t.listening : t.tapSpeak}
           className={`relative group w-28 h-28 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center transition-all shadow-xl active:scale-95 ${
             isListening
               ? 'bg-rose-600 text-white ring-8 ring-rose-400/40 animate-pulse'
@@ -258,12 +294,12 @@ const t = translations[language] ?? translations['en-IN'];
           {isListening ? (
             <>
               <MicOff className="w-12 h-12 sm:w-16 sm:h-16" />
-              <span className="text-xs font-bold mt-1 tracking-wider uppercase">Listening...</span>
+              <span className="text-xs font-bold mt-1 tracking-wider uppercase">{t.listening}</span>
             </>
           ) : (
             <>
               <Mic className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-bold mt-1 tracking-wider uppercase">Tap & Speak</span>
+              <span className="text-xs font-bold mt-1 tracking-wider uppercase">{t.tapSpeak}</span>
             </>
           )}
         </button>
@@ -292,7 +328,7 @@ const t = translations[language] ?? translations['en-IN'];
       {/* Manual Text Search Input Alternative */}
       <form onSubmit={handleManualSubmit} className="relative max-w-2xl mx-auto mb-10">
         <label htmlFor="destination-input" className="sr-only">
-          Enter destination landmark or station name
+          {t.placeholder}
         </label>
         <div className="relative flex items-center">
           <MapPin className="absolute left-4 w-6 h-6 text-slate-400 pointer-events-none" />
@@ -301,14 +337,14 @@ const t = translations[language] ?? translations['en-IN'];
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type destination (e.g. Hazratganj)..."
+            placeholder={t.placeholder}
             className="w-full h-14 pl-14 pr-32 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-base sm:text-lg font-medium focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900 shadow-sm"
           />
           <button
             type="submit"
             className="absolute right-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm flex items-center gap-1.5 transition-colors shadow-sm"
           >
-            <span>Find</span>
+            <span>{t.find}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -335,6 +371,54 @@ const t = translations[language] ?? translations['en-IN'];
           onInitialQuestionHandled={() => setAssistantQuestion('')}
           language={language}
         />
+      </div>
+
+      {/* Quick Demonstration Dest Buttons */}
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <span>{t.destinations}</span>
+          <span>{t.test}</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <button
+            onClick={() => handleQuickSelect('Hazratganj')}
+            className="p-3 text-left rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/60 dark:bg-slate-800/80 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-sm text-blue-950 dark:text-blue-100">Hazratganj</span>
+              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950 px-1.5 py-0.5 rounded">
+                Bus 101 / 305
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">{t.mainScenario}</p>
+          </button>
+
+          <button
+            onClick={() => handleQuickSelect('Gomti Nagar Extension')}
+            className="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-sm text-slate-900 dark:text-white">Gomti Nagar</span>
+              <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+                Bus 204
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{t.techShuttle}</p>
+          </button>
+
+          <button
+            onClick={() => handleQuickSelect('Chaudhary Charan Singh International Airport')}
+            className="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-sm text-slate-900 dark:text-white">Airport T2</span>
+              <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+                Bus 502
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{t.expressRoute}</p>
+          </button>
+        </div>
       </div>
     </div>
   );

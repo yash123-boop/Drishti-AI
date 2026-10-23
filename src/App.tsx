@@ -20,6 +20,7 @@ import { BusConfirmationScreen } from './components/BusConfirmationScreen';
 import { JourneyGuidanceScreen } from './components/JourneyGuidanceScreen';
 import { EmergencyModal } from './components/EmergencyModal';
 import { ValidationModal } from './components/ValidationModal';
+import { LanguageSelectionScreen } from './components/LanguageSelectionScreen';
 
 import { searchRoutesByDestination } from './modules/routes/routeSelector';
 import { journeyEngine } from './modules/journey/journeyEngine';
@@ -30,6 +31,40 @@ import { hapticEngine } from './modules/voice/hapticEngine';
 import { accessibilityManager } from './modules/accessibility/accessibility';
 import { registerGlobalShortcuts } from './modules/accessibility/keyboardNavigation';
 import type { TransitRoute, OCRResult, JourneyState, AccessibilitySettings } from './types/transit';
+import { VOICE_LANGUAGES, type VoiceLanguage } from './modules/voice/voiceMessages';
+import { getUiMessage } from './modules/voice/uiTranslations';
+
+const LANGUAGE_STORAGE_KEY = 'drishti-selected-language';
+
+function getSavedLanguage(): VoiceLanguage {
+  try {
+    const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    return VOICE_LANGUAGES.includes(savedLanguage as VoiceLanguage)
+      ? (savedLanguage as VoiceLanguage)
+      : 'en-IN';
+  } catch {
+    return 'en-IN';
+  }
+}
+
+async function fetchCloudTtsStatus(): Promise<boolean> {
+  const response = await fetch('/api/tts/status');
+  if (!response.ok) {
+    throw new Error(`Cloud speech status request failed with HTTP ${response.status}.`);
+  }
+
+  const result: unknown = await response.json();
+  if (
+    typeof result !== 'object' ||
+    result === null ||
+    !('configured' in result) ||
+    typeof result.configured !== 'boolean'
+  ) {
+    throw new Error('Cloud speech status response was invalid.');
+  }
+
+  return result.configured;
+}
 
 export default function App() { 
   // Navigation View State
@@ -42,10 +77,86 @@ export default function App() {
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
   const [journeyState, setJourneyState] = useState<JourneyState>(journeyEngine.getState());
 // Selected app language
-const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
+const [selectedLanguage, setSelectedLanguage] = useState<VoiceLanguage>(getSavedLanguage);
+const [showLanguageSelection, setShowLanguageSelection] = useState(true);
+const [languagePreferenceError, setLanguagePreferenceError] = useState('');
+const [hasSelectedLanguageVoice, setHasSelectedLanguageVoice] = useState<boolean | null>(null);
+const [cloudTtsConfigured, setCloudTtsConfigured] = useState<boolean | null>(null);
+const [speechError, setSpeechError] = useState('');
+useEffect(() => {
+  speechSynth.setSpeechErrorHandler(setSpeechError);
+  return () => speechSynth.setSpeechErrorHandler(null);
+}, []);
 useEffect(() => {
   speechSynth.setLanguage(selectedLanguage);
+  speechRecognition.setLanguage(selectedLanguage);
+  document.documentElement.lang = selectedLanguage;
+
+  const updateVoiceAvailability = () => {
+    setHasSelectedLanguageVoice(speechSynth.hasVoiceForLanguage(selectedLanguage));
+  };
+
+  updateVoiceAvailability();
+  window.speechSynthesis?.addEventListener('voiceschanged', updateVoiceAvailability);
+  const voiceLoadTimer = window.setTimeout(updateVoiceAvailability, 1000);
+
+  return () => {
+    window.speechSynthesis?.removeEventListener('voiceschanged', updateVoiceAvailability);
+    window.clearTimeout(voiceLoadTimer);
+  };
 }, [selectedLanguage]);
+
+useEffect(() => {
+  let isCurrent = true;
+
+  fetchCloudTtsStatus()
+    .then((configured) => {
+      if (!isCurrent) return;
+      speechSynth.setCloudTtsAvailable(configured);
+      setCloudTtsConfigured(configured);
+    })
+    .catch((error: unknown) => {
+      console.error('Could not check cloud speech configuration:', error);
+      if (!isCurrent) return;
+      speechSynth.setCloudTtsAvailable(false);
+      setCloudTtsConfigured(false);
+    });
+
+  return () => {
+    isCurrent = false;
+  };
+}, []);
+
+const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
+  setSpeechError('');
+  setSelectedLanguage(language);
+  speechSynth.setLanguage(language);
+  speechRecognition.setLanguage(language);
+  try {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    setLanguagePreferenceError('');
+  } catch {
+    setLanguagePreferenceError('Language preference could not be saved. It will apply for this visit.');
+  }
+  if (enterApp) {
+    setShowLanguageSelection(false);
+  }
+
+  let cloudTtsAvailable = cloudTtsConfigured;
+  if (!speechSynth.hasVoiceForLanguage(language) && cloudTtsAvailable === null) {
+    try {
+      cloudTtsAvailable = await fetchCloudTtsStatus();
+      setCloudTtsConfigured(cloudTtsAvailable);
+    } catch (error) {
+      console.error('Could not check cloud speech configuration:', error);
+      cloudTtsAvailable = false;
+      setCloudTtsConfigured(false);
+    }
+    speechSynth.setCloudTtsAvailable(cloudTtsAvailable);
+  }
+
+  speechSynth.announceWelcome();
+};
   // Modals & Accessibility State
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isValidationOpen, setIsValidationOpen] = useState(false);
@@ -73,15 +184,6 @@ useEffect(() => {
       unsubAnnouncer();
     };
   }, []);
-
-  // Announce welcome on initial load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      speechSynth.announceWelcome();
-    }, 800);
-    return () => clearTimeout(timer);
-  }, []);
-
   // Keyboard navigation shortcuts
   useEffect(() => {
     const unsubShortcuts = registerGlobalShortcuts({
@@ -138,7 +240,7 @@ useEffect(() => {
     if (routes.length > 0) {
       speechSynth.announceRoutesFound(routes.length, dest);
     } else {
-      speechSynth.speak(`No demonstration routes found for ${dest}. Try searching for Hazratganj.`);
+      speechSynth.announceNoRoutes(dest);
     }
   };
 
@@ -189,7 +291,18 @@ useEffect(() => {
       ? 'text-scale-xlarge'
       : 'text-scale-normal';
 
- return (
+  if (showLanguageSelection) {
+    return (
+      <LanguageSelectionScreen
+        selectedLanguage={selectedLanguage}
+        hasVoice={hasSelectedLanguageVoice}
+        cloudTtsConfigured={cloudTtsConfigured}
+        onSelectLanguage={(language) => selectLanguage(language, true)}
+      />
+    );
+  }
+
+  return (
     <div
       className={`min-h-screen flex flex-col transition-colors ${
         a11ySettings.highContrast ? 'high-contrast' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'
@@ -210,6 +323,7 @@ useEffect(() => {
 
       {/* Primary Accessible Navigation Header */}
       <Header
+        language={selectedLanguage}
         currentView={currentView}
         onNavigate={(view) => {
           if (view === 'home') {
@@ -226,14 +340,19 @@ useEffect(() => {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col justify-center">
+      {speechError && (
+        <p role="alert" className="mx-auto my-3 max-w-3xl px-4 text-center text-sm text-rose-700 dark:text-rose-300">
+          {speechError}
+        </p>
+      )}
       <div className="flex justify-end p-3">
-  <label className="flex items-center gap-2 text-sm">
-    <span>🌐 Language</span>
+  <label className="flex flex-wrap items-center gap-2 text-sm">
+    <span>🌐 {getUiMessage(selectedLanguage, 'language')}</span>
     <select
       value={selectedLanguage}
-      onChange={(event) => setSelectedLanguage(event.target.value)}
+      onChange={(event) => void selectLanguage(event.target.value as VoiceLanguage, false)}
       className="rounded-lg border border-violet-300 bg-white px-3 py-2 text-slate-900"
-      aria-label="Choose language"
+      aria-label={getUiMessage(selectedLanguage, 'language')}
     >
       <option value="en-IN">English</option>
       <option value="hi-IN">हिन्दी</option>
@@ -246,6 +365,18 @@ useEffect(() => {
       <option value="gu-IN">ગુજરાતી</option>
       <option value="pa-IN">ਪੰਜਾਬੀ</option>
     </select>
+    {hasSelectedLanguageVoice === false && cloudTtsConfigured === false && (
+      <span className="text-xs text-amber-700 dark:text-amber-300" role="status">
+        {getUiMessage(selectedLanguage, 'voiceMissing', {
+          language: selectedLanguage.split('-')[0],
+        })}
+      </span>
+    )}
+    {languagePreferenceError && (
+      <span className="text-xs text-rose-700 dark:text-rose-300" role="alert">
+        {languagePreferenceError}
+      </span>
+    )}
   </label>
 </div>
         {currentView === 'destination' && (
@@ -260,6 +391,7 @@ useEffect(() => {
 
         {currentView === 'routes' && (
           <RouteSelectionScreen
+            language={selectedLanguage}
             destinationQuery={destinationQuery}
             routes={matchingRoutes}
             onSelectRoute={handleSelectRoute}

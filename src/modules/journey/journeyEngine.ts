@@ -147,7 +147,7 @@ class JourneyEngineManager {
     if (this.state.status === 'TRANSIT' || this.state.status === 'STARTED' || this.state.status === 'APPROACHING') {
       this.state.status = 'PAUSED';
       this.stopAutoPlay();
-      speechSynth.speak('Journey paused. Press resume when you are ready.');
+      speechSynth.speakMessage('journeyPaused');
       this.notify();
     }
   }
@@ -155,7 +155,7 @@ class JourneyEngineManager {
   public resumeJourney() {
     if (this.state.status === 'PAUSED') {
       this.state.status = this.state.isApproaching ? 'APPROACHING' : 'TRANSIT';
-      speechSynth.speak('Journey resumed.');
+      speechSynth.speakMessage('journeyResumed');
       this.notify();
     }
   }

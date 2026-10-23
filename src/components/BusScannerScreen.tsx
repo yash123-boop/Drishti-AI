@@ -72,7 +72,7 @@ export const BusScannerScreen: React.FC<BusScannerScreenProps> = ({
       if (!videoRef.current) throw new Error('Camera preview is not available.');
       await busOCR.startCamera(videoRef.current);
       setCameraActive(true);
-      speechSynth.speak('Camera active. Align the front bus display board within the frame.');
+      speechSynth.speakMessage('cameraActive');
     } catch (error) {
       setCameraActive(false);
       const errorName = error instanceof DOMException ? error.name : '';

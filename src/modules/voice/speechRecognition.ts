@@ -2,6 +2,7 @@
  * Voice Recognition Engine using Web Speech API (SpeechRecognition)
  * Parses spoken travel destinations for visually impaired commuters
  */
+import { getVoiceMessage } from './voiceMessages';
 
 export interface SpeechRecognitionResult {
   transcript: string;
@@ -15,6 +16,11 @@ type StatusCallback = (isListening: boolean) => void;
 class SpeechRecognitionManager {
   private recognition: any = null;
   private isListening: boolean = false;
+  private language = 'en-IN';
+
+  public setLanguage(language: string) {
+    this.language = language;
+  }
 
   public isSupported(): boolean {
     if (typeof window === 'undefined') return false;
@@ -65,7 +71,7 @@ class SpeechRecognitionManager {
     language: string = 'en-US'
   ) {
     if (!this.isSupported()) {
-      onError('Speech recognition is not supported in this browser. Please use manual entry.');
+      onError(getVoiceMessage(this.language, 'micUnsupported'));
       return;
     }
 
@@ -81,7 +87,7 @@ class SpeechRecognitionManager {
 
       this.recognition.continuous = false;
       this.recognition.interimResults = false;
-      this.recognition.lang = language;
+      this.recognition.lang = this.language;
 
       this.recognition.onstart = () => {
         this.isListening = true;
@@ -98,15 +104,15 @@ class SpeechRecognitionManager {
       };
 
       this.recognition.onerror = (event: any) => {
-        let msg = 'Voice recognition error occurred.';
+        let messageKey: 'micDenied' | 'micNoSpeech' | 'micNetwork' | 'micError' = 'micError';
         if (event.error === 'not-allowed') {
-          msg = 'Microphone permission was denied. Please allow microphone access or type your destination.';
+          messageKey = 'micDenied';
         } else if (event.error === 'no-speech') {
-          msg = 'No speech was detected. Please try speaking again.';
+          messageKey = 'micNoSpeech';
         } else if (event.error === 'network') {
-          msg = 'Network connection issue during speech recognition. Using offline text fallback.';
+          messageKey = 'micNetwork';
         }
-        onError(msg);
+        onError(getVoiceMessage(this.language, messageKey));
       };
 
       this.recognition.onend = () => {
@@ -118,7 +124,7 @@ class SpeechRecognitionManager {
     } catch (err: any) {
       this.isListening = false;
       onStatusChange?.(false);
-      onError(err?.message || 'Could not initiate microphone.');
+      onError(getVoiceMessage(this.language, 'micError'));
     }
   }
 

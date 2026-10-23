@@ -47,11 +47,11 @@ export const JourneyGuidanceScreen: React.FC<JourneyGuidanceScreenProps> = ({
     audioChimes.play('tap');
     hapticEngine.tap();
     if (hasArrived) {
-      speechSynth.speak(`You have arrived at your final destination: ${route.destination}. The sample one-way bus fare was ${DEMO_FARES_INR[route.id] ?? 'not listed'} rupees. Please exit safely.`);
+      speechSynth.announceDestinationReached(route.destination);
     } else if (isApproaching) {
-      speechSynth.speak(`Warning: Destination approaching. Current stop: ${currentStop.name}. Next stop is your final stop: ${route.destination}. Sample one-way bus fare ${DEMO_FARES_INR[route.id] ?? 'not listed'} rupees.`);
+      speechSynth.announceApproaching(route.destination);
     } else {
-      speechSynth.speak(`Current stop: ${currentStop.name}. ${currentStop.landmark}. Next stop: ${nextStop?.name || 'Final stop'}. Sample one-way bus fare ${DEMO_FARES_INR[route.id] ?? 'not listed'} rupees.`);
+      speechSynth.announceStopProgress(currentStop.name, nextStop?.name ?? null);
     }
   };
 

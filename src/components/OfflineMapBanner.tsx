@@ -65,7 +65,7 @@ export const OfflineMapBanner: React.FC<OfflineMapBannerProps> = ({ currentRoute
     setIsCaching(true);
     audioChimes.play('tap');
     hapticEngine.tap();
-    speechSynth.speak(`Service Worker starting offline tile caching for ${activeRoute.routeName}.`);
+    speechSynth.speakMessage('offlineCacheStarting', { route: activeRoute.routeName });
 
     const result = await mapTileCacheService.cacheRouteTiles(activeRoute, (prog) => {
       setCacheProgress(prog);
@@ -77,9 +77,7 @@ export const OfflineMapBanner: React.FC<OfflineMapBannerProps> = ({ currentRoute
       setCacheMeta(mapTileCacheService.getCacheMetadata(activeRoute.id));
       audioChimes.play('success');
       hapticEngine.tap();
-      speechSynth.speak(
-        `${result.cachedCount} of ${routeTiles.length} real map tiles cached for ${activeRoute.routeName}.`
-      );
+      speechSynth.speakMessage('offlineCacheDone', { route: activeRoute.routeName });
     } else {
       audioChimes.play('wrong-bus');
       speechSynth.speak('No map tiles could be cached. Check your internet connection and try again.');
@@ -94,9 +92,9 @@ export const OfflineMapBanner: React.FC<OfflineMapBannerProps> = ({ currentRoute
     hapticEngine.tap();
 
     if (next) {
-      speechSynth.speak('Simulated offline mode enabled. Service worker is now serving cached map tiles.');
+      speechSynth.speakMessage('offlineEnabled');
     } else {
-      speechSynth.speak('Online connectivity restored.');
+      speechSynth.speakMessage('onlineRestored');
     }
   };
 
@@ -105,13 +103,13 @@ export const OfflineMapBanner: React.FC<OfflineMapBannerProps> = ({ currentRoute
     await mapTileCacheService.clearMapCache();
     setCachedTileCount(0);
     setCacheMeta(null);
-    speechSynth.speak('Offline map tile cache cleared.');
+    speechSynth.speakMessage('offlineCacheCleared');
   };
 
   const handleSyncTimetables = () => {
     saveRoutesToOfflineCache(DEMO_ROUTES);
     audioChimes.play('success');
-    speechSynth.speak('Offline transit schedules synchronized.');
+    speechSynth.speakMessage('offlineSchedulesSynced');
   };
 
   const isActuallyOffline = !isOnline || isSimulatedOffline;

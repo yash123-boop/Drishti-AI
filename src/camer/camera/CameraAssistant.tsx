@@ -1,31 +1,40 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Camera, CameraOff, RotateCcw, Volume2 } from 'lucide-react';
+import { speechSynth } from '../../modules/voice/speechSynthesis';
+import type { VoiceMessageKey } from '../../modules/voice/voiceMessages';
 
 export default function CameraAssistant() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isMountedRef = useRef(false);
+  const isStartingRef = useRef(false);
 
   const [cameraOn, setCameraOn] = useState(false);
-  const [message, setMessage] = useState(
-    'Press Start Camera to begin.'
-  );
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [message, setMessage] = useState(speechSynth.getMessage('cameraStartPrompt'));
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
-  const speak = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-IN';
-    window.speechSynthesis.speak(utterance);
+  const speak = (key: VoiceMessageKey) => {
+    const text = speechSynth.getMessage(key);
+    speechSynth.speak(text);
     setMessage(text);
   };
 
+  const stopStream = (stream: MediaStream | null) => {
+    stream?.getTracks().forEach((track) => track.stop());
+  };
+
   const startCamera = async () => {
+    if (isStartingRef.current || streamRef.current) return;
+
+    isStartingRef.current = true;
+    setCameraStarting(true);
+
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
-        speak('Camera is unavailable. Please use HTTPS or localhost.');
+        speak('cameraUnavailable');
         return;
       }
 
@@ -34,33 +43,59 @@ export default function CameraAssistant() {
         audio: false,
       });
 
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      if (!isMountedRef.current) {
+        stopStream(stream);
+        return;
       }
 
+      const video = videoRef.current;
+      if (!video) {
+        stopStream(stream);
+        speak('cameraPreviewFailed');
+        return;
+      }
+
+      streamRef.current = stream;
+      video.srcObject = stream;
+      await video.play();
+
+      if (!isMountedRef.current) return;
       setCameraOn(true);
-      speak(
-        'Camera is ready. Point your phone toward the person or object you want to photograph.'
-      );
-    } catch {
-      speak(
-        'Camera access failed. Please allow camera permission in your browser settings.'
-      );
+      speak('cameraReady');
+    } catch (error) {
+      stopStream(streamRef.current);
+      streamRef.current = null;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+
+      if (isMountedRef.current) {
+        setCameraOn(false);
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+          speak('cameraDenied');
+        } else if (error instanceof DOMException && error.name === 'NotFoundError') {
+          speak('cameraNoDevice');
+        } else {
+          speak('cameraFailed');
+        }
+      }
+    } finally {
+      isStartingRef.current = false;
+      if (isMountedRef.current) {
+        setCameraStarting(false);
+      }
     }
   };
 
   const stopCamera = () => {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
+    stopStream(streamRef.current);
     streamRef.current = null;
 
     if (videoRef.current) videoRef.current.srcObject = null;
 
     setCameraOn(false);
-    setBusy(false);
-    speak('Camera stopped.');
+    speak('cameraStopped');
   };
 
   const capturePhoto = () => {
@@ -68,7 +103,7 @@ export default function CameraAssistant() {
     const canvas = canvasRef.current;
 
     if (!video || !canvas || !video.videoWidth) {
-      speak('Camera is not ready yet. Please wait.');
+      speak('cameraNotReady');
       return;
     }
 
@@ -77,15 +112,18 @@ export default function CameraAssistant() {
 
     const context = canvas.getContext('2d');
     if (!context) {
-      speak('Unable to capture the photo.');
+      speak('cameraCaptureFailed');
       return;
     }
 
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const url = canvas.toDataURL('image/jpeg', 0.9);
-    setPhotoUrl(url);
-    speak('Photo captured. You can now describe this photo or retake it.');
+    try {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const url = canvas.toDataURL('image/jpeg', 0.9);
+      setPhotoUrl(url);
+      speak('cameraCaptured');
+    } catch {
+      speak('cameraCaptureFailed');
+    }
   };
 
   const downloadPhoto = () => {
@@ -96,13 +134,18 @@ export default function CameraAssistant() {
     link.download = `drishti-photo-${Date.now()}.jpg`;
     link.click();
 
-    speak('Photo saved to your downloads.');
+    speak('cameraSaved');
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      window.speechSynthesis.cancel();
+      isMountedRef.current = false;
+      stopStream(streamRef.current);
+      streamRef.current = null;
+      if (videoRef.current) videoRef.current.srcObject = null;
+      speechSynth.stop();
     };
   }, []);
 
@@ -117,15 +160,13 @@ export default function CameraAssistant() {
         </p>
       </header>
 
-      <div
-        className="overflow-hidden rounded-2xl bg-slate-950"
-        aria-label="Camera preview"
-      >
+      <div className="overflow-hidden rounded-2xl bg-slate-950">
         <video
           ref={videoRef}
           autoPlay
           muted
           playsInline
+          aria-label="Live camera preview"
           className="aspect-[4/3] w-full object-contain"
         />
       </div>
@@ -141,7 +182,9 @@ export default function CameraAssistant() {
         <p className="mt-1">{message}</p>
         <button
           type="button"
-          onClick={() => speak(message)}
+          onClick={() => {
+            speechSynth.speak(message);
+          }}
           className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg border border-violet-300 px-4 py-2"
         >
           <Volume2 size={20} aria-hidden="true" />
@@ -154,10 +197,11 @@ export default function CameraAssistant() {
           <button
             type="button"
             onClick={startCamera}
+            disabled={cameraStarting}
             className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-semibold text-white"
           >
             <Camera aria-hidden="true" />
-            Start Camera
+            {cameraStarting ? 'Starting Camera...' : 'Start Camera'}
           </button>
         ) : (
           <button

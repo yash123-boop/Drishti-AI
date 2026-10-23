@@ -13,9 +13,12 @@ import {
 import { speechSynth } from '../modules/voice/speechSynthesis';
 import { hapticEngine } from '../modules/voice/hapticEngine';
 import { audioChimes } from '../modules/voice/audioChimes';
+import { getUiMessage } from '../modules/voice/uiTranslations';
+import type { VoiceLanguage } from '../modules/voice/voiceMessages';
 import type { AccessibilitySettings } from '../types/transit';
 
 interface HeaderProps {
+  language: VoiceLanguage;
   currentView: string;
   onNavigate: (view: string) => void;
   a11ySettings: AccessibilitySettings;
@@ -25,6 +28,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  language,
   currentView,
   onNavigate,
   a11ySettings,
@@ -38,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
     speechSynth.setEnabled(next);
     audioChimes.play('tap');
     if (next) {
-      speechSynth.speak('Spoken announcements enabled');
+      speechSynth.speakMessage('spokenEnabled');
     }
   };
 
@@ -56,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
     onUpdateA11y({ textSize: next });
     audioChimes.play('tap');
     hapticEngine.tap();
-    speechSynth.speak(`Text size set to ${next}`);
+    speechSynth.speakMessage('textSize', { size: next });
   };
 
   const handleRepeatVoice = () => {
@@ -64,6 +68,8 @@ export const Header: React.FC<HeaderProps> = ({
     hapticEngine.tap();
     speechSynth.repeat();
   };
+  const text = (key: Parameters<typeof getUiMessage>[1]) =>
+    getUiMessage(language, key);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-colors">
@@ -103,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Travel & Journey
+              {text('journey')}
             </button>
 
             <button
@@ -114,16 +120,16 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Bus Board OCR
+              {text('scanner')}
             </button>
 
             <button
               onClick={onOpenValidation}
               className="px-3 py-2 rounded-lg hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap min-h-[44px] flex items-center gap-1.5 text-slate-700 dark:text-slate-200"
-              aria-label="Run Automated Verification Test Suite"
+              aria-label={text('verify')}
             >
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Verify Suite (All 5 Scenarios)</span>
+              <span>{text('verify')}</span>
             </button>
           </nav>
 
@@ -132,8 +138,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Repeat Audio Announcement */}
             <button
               onClick={handleRepeatVoice}
-              title="Repeat last spoken announcement (Alt+R)"
-              aria-label="Repeat last spoken announcement"
+              title={text('repeat')}
+              aria-label={text('repeat')}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 transition-colors shadow-sm"
             >
               <RotateCcw className="w-5 h-5" />
@@ -142,8 +148,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Font Scale Cycle */}
             <button
               onClick={cycleTextSize}
-              title={`Cycle Text Size (Current: ${a11ySettings.textSize})`}
-              aria-label={`Cycle Text Size: current is ${a11ySettings.textSize}`}
+              title={text('textSize')}
+              aria-label={text('textSize')}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 transition-colors shadow-sm gap-0.5 px-2"
             >
               <Type className="w-4 h-4" />
@@ -153,8 +159,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* High Contrast Mode */}
             <button
               onClick={toggleContrast}
-              title="Toggle Ultra High Contrast (Alt+H)"
-              aria-label="Toggle High Contrast Mode"
+              title={text('contrast')}
+              aria-label={text('contrast')}
               className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border transition-colors shadow-sm ${
                 a11ySettings.highContrast
                   ? 'bg-yellow-400 text-black border-yellow-300 font-extrabold'
@@ -167,8 +173,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Speech Toggle */}
             <button
               onClick={toggleSpeech}
-              title={a11ySettings.speechEnabled ? 'Mute Speech Synthesis' : 'Enable Speech Synthesis'}
-              aria-label={a11ySettings.speechEnabled ? 'Mute Speech Synthesis' : 'Enable Speech Synthesis'}
+              title={a11ySettings.speechEnabled ? text('mute') : text('enableSpeech')}
+              aria-label={a11ySettings.speechEnabled ? text('mute') : text('enableSpeech')}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 transition-colors shadow-sm"
             >
               {a11ySettings.speechEnabled ? (
@@ -182,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenEmergency}
               className="min-h-[44px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-rose-600/25 active:scale-95 transition-all"
-              aria-label="Emergency SOS Assistance (Alt+S)"
+              aria-label={text('emergency')}
             >
               <AlertTriangle className="w-5 h-5" />
               <span className="tracking-wider">SOS</span>

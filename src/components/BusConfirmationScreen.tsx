@@ -59,11 +59,11 @@ export const BusConfirmationScreen: React.FC<BusConfirmationScreenProps> = ({
   const handleSpeakStatus = () => {
     audioChimes.play('tap');
     if (isMatch) {
-      speechSynth.speak(`Detected Bus ${candidateNumber}. This matches your selected route.`);
+      speechSynth.announceDetectedBus(candidateNumber);
     } else if (isWrongBus) {
-      speechSynth.speak(matchResult.message);
+      speechSynth.announceWrongBus(candidateNumber, selectedRoute.busNumber);
     } else {
-      speechSynth.speak('No valid bus number detected. Please edit or enter manually.');
+      speechSynth.announceInvalidBus();
     }
   };
 

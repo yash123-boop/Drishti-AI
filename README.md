@@ -10,6 +10,9 @@ Drishti AI solves the critical everyday challenges faced by visually impaired pa
 
 1. **Audio Navigation & Spoken Guidance**:
    - Turn-by-turn spoken guidance via the browser `SpeechSynthesis` API.
+   - Localized voice guidance and destination speech recognition in English, Hindi, Bengali, Marathi, Tamil, Telugu, Kannada, Malayalam, Gujarati, and Punjabi.
+   - Uses an installed browser voice when available, with Google Cloud Text-to-Speech as the server-side fallback; microphone recognition requires browser support.
+   - A language-selection screen appears when the site opens. Selecting a language speaks the welcome message, opens the app in that language, and saves the preference on the device.
    - Low-latency synthesized earcons (Web Audio API) for stop arrival, destination alerts, and wrong-bus warnings.
    - Hands-free voice destination input via the `SpeechRecognition` API.
 
@@ -82,6 +85,16 @@ npm install
 npm run dev
 ```
 Open `http://localhost:3000` in your web browser.
+
+### Multilingual Cloud Speech
+To enable spoken output when the device has no matching installed voice:
+
+1. Enable the Google Cloud Text-to-Speech API for a Google Cloud project and create an API key restricted to that API.
+2. Copy `.env.example` to `.env` and set `GOOGLE_CLOUD_TTS_API_KEY` locally. Never expose this key in frontend code or commit it.
+3. Run `npm run dev`; the server reports cloud speech availability at `/api/tts/status`.
+4. For production, build with `npm run build`, configure `GOOGLE_CLOUD_TTS_API_KEY` as a server secret, and run `npm start`.
+
+Cloud speech requires internet access and a Google Cloud project with billing/API access configured. Without the key, the app continues using installed browser voices.
 
 ### Production Build
 ```bash

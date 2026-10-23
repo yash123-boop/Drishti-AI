@@ -29,8 +29,11 @@ Drishti AI follows a modular, event-driven architecture designed to operate 100%
 ## Module Boundaries
 
 1. **`voice/`**:
-   - `speechRecognition.ts`: Wraps `webkitSpeechRecognition` / `SpeechRecognition`. Sanitizes destination input by stripping conversational filler words.
-   - `speechSynthesis.ts`: Manages `SpeechSynthesisUtterance` queues, natural voice selection, and rate/pitch controls.
+   - `speechRecognition.ts`: Wraps `webkitSpeechRecognition` / `SpeechRecognition`, uses the selected locale, and sanitizes destination input by stripping conversational filler words.
+   - `speechSynthesis.ts`: Manages `SpeechSynthesisUtterance` queues, natural voice selection, and localized speech output.
+   - `voiceMessages.ts`: Provides the localized voice prompts and error messages for the ten supported Indian language locales.
+   - `supportedLanguages.js`: Shares the supported locale allowlist between the browser and server.
+   - `server.js`: Serves the Vite app in development or built assets in production and proxies validated cloud TTS requests without exposing the API key to the browser.
    - `audioChimes.ts`: Web Audio API synthesizer generating earcons (ascending next-stop chimes, alert pings, celebratory arrival chords).
    - `hapticEngine.ts`: Triggers hardware `navigator.vibrate` and broadcasts vibration pulse payloads to UI listeners.
 

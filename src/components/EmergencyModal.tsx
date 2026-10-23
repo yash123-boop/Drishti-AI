@@ -112,11 +112,11 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose,
     if (alarmOn) {
       emergencyAssist.stopSiren();
       setAlarmOn(false);
-      speechSynth.speak('Local alarm stopped.');
+      speechSynth.speakMessage('sirenStopped');
     } else {
       emergencyAssist.startSiren();
       setAlarmOn(true);
-      speechSynth.speak('Local alarm started.');
+      speechSynth.speakMessage('sirenResumed');
     }
   };
 
