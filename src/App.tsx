@@ -17,6 +17,7 @@ import { DestinationScreen } from './components/DestinationScreen';
 import { RouteSelectionScreen } from './components/RouteSelectionScreen';
 import { BusScannerScreen } from './components/BusScannerScreen';
 import { BusConfirmationScreen } from './components/BusConfirmationScreen';
+import CameraAssistant from './camera/camera/CameraAssistant';
 import { JourneyGuidanceScreen } from './components/JourneyGuidanceScreen';
 import { EmergencyModal } from './components/EmergencyModal';
 import { ValidationModal } from './components/ValidationModal';
@@ -31,7 +32,7 @@ import { accessibilityManager, DEFAULT_ACCESSIBILITY_SETTINGS } from './modules/
 import { registerGlobalShortcuts } from './modules/accessibility/keyboardNavigation';
 import type { TransitRoute, OCRResult, JourneyState, AccessibilitySettings } from './types/transit';
 
-export default function App() {
+export default function App() { 
   // Navigation View State
   const [currentView, setCurrentView] = useState<'destination' | 'routes' | 'scanner' | 'confirmation' | 'journey'>('destination');
 
@@ -39,9 +40,14 @@ export default function App() {
   const [destinationQuery, setDestinationQuery] = useState('Hazratganj');
   const [matchingRoutes, setMatchingRoutes] = useState<TransitRoute[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<TransitRoute | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
   const [journeyState, setJourneyState] = useState<JourneyState>(journeyEngine.getState());
-
+// Selected app language
+const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
+useEffect(() => {
+  speechSynth.setLanguage(selectedLanguage);
+}, [selectedLanguage]);
   // Modals & Accessibility State
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isValidationOpen, setIsValidationOpen] = useState(false);
@@ -177,7 +183,7 @@ export default function App() {
       ? 'text-scale-xlarge'
       : 'text-scale-normal';
 
-  return (
+  return 
     <div
       className={`min-h-screen flex flex-col transition-colors ${
         a11ySettings.highContrast ? 'high-contrast' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'
@@ -214,8 +220,33 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col justify-center">
+      <div className="flex justify-end p-3">
+  <label className="flex items-center gap-2 text-sm">
+    <span>🌐 Language</span>
+    <select
+      value={selectedLanguage}
+      onChange={(event) => setSelectedLanguage(event.target.value)}
+      className="rounded-lg border border-violet-300 bg-white px-3 py-2 text-slate-900"
+      aria-label="Choose language"
+    >
+      <option value="en-IN">English</option>
+      <option value="hi-IN">हिन्दी</option>
+      <option value="bn-IN">বাংলা</option>
+      <option value="mr-IN">मराठी</option>
+      <option value="ta-IN">தமிழ்</option>
+      <option value="te-IN">తెలుగు</option>
+      <option value="kn-IN">ಕನ್ನಡ</option>
+      <option value="ml-IN">മലയാളം</option>
+      <option value="gu-IN">ગુજરાતી</option>
+      <option value="pa-IN">ਪੰਜਾਬੀ</option>
+    </select>
+  </label>
+</div>
         {currentView === 'destination' && (
-          <DestinationScreen onSearch={handleSearchDestination} />
+          <DestinationScreen
+  onSearch={handleSearchDestination}
+  language={selectedLanguage}
+/>
         )}
 
         {currentView === 'routes' && (

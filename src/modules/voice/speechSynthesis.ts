@@ -9,6 +9,11 @@ class SpeechSynthesisManager {
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private rate: number = 1.0;
   private pitch: number = 1.0;
+  private language: string = 'en-IN';
+
+public setLanguage(language: string) {
+  this.language = language;
+}
 
   public isSupported(): boolean {
     return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -44,16 +49,32 @@ class SpeechSynthesisManager {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = this.rate;
       utterance.pitch = this.pitch;
-      utterance.lang = 'en-US';
-
-      // Pick clean natural voice if available
+      utterance.lang = this.language;
       const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(
-        (v) => (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('David')) && v.lang.startsWith('en')
-      );
-      if (preferred) {
-        utterance.voice = preferred;
-      }
+
+const preferred =
+  voices.find(
+    (voice) =>
+      voice.lang.toLowerCase() === this.language.toLowerCase()
+  ) ??
+  voices.find(
+    (voice) =>
+      voice.lang.toLowerCase().startsWith(
+        this.language.split('-')[0].toLowerCase()
+      )
+  );
+
+if (preferred) {
+  utterance.voice = preferred;
+}
+
+
+
+     
+    
+      
+        
+  
 
       this.currentUtterance = utterance;
       window.speechSynthesis.speak(utterance);
