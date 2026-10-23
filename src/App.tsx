@@ -17,7 +17,6 @@ import { DestinationScreen } from './components/DestinationScreen';
 import { RouteSelectionScreen } from './components/RouteSelectionScreen';
 import { BusScannerScreen } from './components/BusScannerScreen';
 import { BusConfirmationScreen } from './components/BusConfirmationScreen';
-import CameraAssistant from './camera/camera/CameraAssistant';
 import { JourneyGuidanceScreen } from './components/JourneyGuidanceScreen';
 import { EmergencyModal } from './components/EmergencyModal';
 import { ValidationModal } from './components/ValidationModal';
@@ -28,7 +27,7 @@ import { speechSynth } from './modules/voice/speechSynthesis';
 import { speechRecognition } from './modules/voice/speechRecognition';
 import { audioChimes } from './modules/voice/audioChimes';
 import { hapticEngine } from './modules/voice/hapticEngine';
-import { accessibilityManager, DEFAULT_ACCESSIBILITY_SETTINGS } from './modules/accessibility/accessibility';
+import { accessibilityManager } from './modules/accessibility/accessibility';
 import { registerGlobalShortcuts } from './modules/accessibility/keyboardNavigation';
 import type { TransitRoute, OCRResult, JourneyState, AccessibilitySettings } from './types/transit';
 
@@ -40,7 +39,6 @@ export default function App() {
   const [destinationQuery, setDestinationQuery] = useState('Hazratganj');
   const [matchingRoutes, setMatchingRoutes] = useState<TransitRoute[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<TransitRoute | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
   const [journeyState, setJourneyState] = useState<JourneyState>(journeyEngine.getState());
 // Selected app language
@@ -54,6 +52,10 @@ useEffect(() => {
   const [a11ySettings, setA11ySettings] = useState<AccessibilitySettings>(accessibilityManager.loadSettings());
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const [politeness, setPoliteness] = useState<'polite' | 'assertive'>('polite');
+
+  useEffect(() => {
+    speechSynth.setEnabled(a11ySettings.speechEnabled);
+  }, [a11ySettings.speechEnabled]);
 
   // Subscribe to journey engine updates
   useEffect(() => {
@@ -145,18 +147,22 @@ useEffect(() => {
     setCurrentView('scanner');
   };
 
+  const handleOpenBusScanner = () => {
+    handleSearchDestination('Hazratganj');
+  };
+
   const handleOCRComplete = (result: OCRResult) => {
     setOcrResult(result);
     setCurrentView('confirmation');
   };
 
-  const handleManualEntryFallback = () => {
+  const handleManualEntryFallback = (busNumber: string) => {
     if (!selectedRoute) return;
     setOcrResult({
-      rawText: '',
-      candidateNumber: selectedRoute.busNumber,
-      confidence: 100,
-      isReliable: true,
+      rawText: busNumber,
+      candidateNumber: busNumber.trim().toUpperCase().replace(/^BUS[-\s]?/, ''),
+      confidence: 0,
+      isReliable: false,
       source: 'manual',
     });
     setCurrentView('confirmation');
@@ -183,7 +189,7 @@ useEffect(() => {
       ? 'text-scale-xlarge'
       : 'text-scale-normal';
 
-  return 
+ return (
     <div
       className={`min-h-screen flex flex-col transition-colors ${
         a11ySettings.highContrast ? 'high-contrast' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'
@@ -244,9 +250,12 @@ useEffect(() => {
 </div>
         {currentView === 'destination' && (
           <DestinationScreen
-  onSearch={handleSearchDestination}
-  language={selectedLanguage}
-/>
+            onSearch={handleSearchDestination}
+            language={selectedLanguage}
+            onOpenEmergency={() => setIsEmergencyOpen(true)}
+            onScanBus={handleOpenBusScanner}
+            onStartJourney={handleSelectRoute}
+          />
         )}
 
         {currentView === 'routes' && (
@@ -264,6 +273,7 @@ useEffect(() => {
             onOCRComplete={handleOCRComplete}
             onManualEntry={handleManualEntryFallback}
             onBack={() => setCurrentView('routes')}
+            language={selectedLanguage}
           />
         )}
 
@@ -301,6 +311,7 @@ useEffect(() => {
       <EmergencyModal
         isOpen={isEmergencyOpen}
         onClose={() => setIsEmergencyOpen(false)}
+        language={selectedLanguage}
       />
 
       {/* Automated Verification Test Suite Dialog */}

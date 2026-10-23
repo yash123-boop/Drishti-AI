@@ -9,6 +9,20 @@ export interface ParsedBusResult {
   extractedTokens: string[];
 }
 
+export function parseDestinationFromOCR(rawText: string): string | null {
+  const destinations = [
+    'Hazratganj',
+    'Gomti Nagar',
+    'Alambagh',
+    'Charbagh',
+    'Lucknow Airport',
+  ];
+  const normalizedText = rawText.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+  return destinations.find((destination) =>
+    normalizedText.includes(destination.toLowerCase())
+  ) ?? null;
+}
+
 export function parseBusNumberFromOCR(rawText: string, tesseractConfidence: number = 0): ParsedBusResult {
   if (!rawText || !rawText.trim()) {
     return {
@@ -37,9 +51,26 @@ export function parseBusNumberFromOCR(rawText: string, tesseractConfidence: numb
   if (digitMatches.length > 0) {
     return {
       candidateNumber: digitMatches[0],
-      confidenceScore: Math.max(tesseractConfidence, 85),
+      confidenceScore: tesseractConfidence,
       extractedTokens: tokens
     };
+  }
+
+  // LED displays can be segmented by OCR into separate single-digit tokens.
+  for (let index = 0; index < filteredTokens.length; index += 1) {
+    if (!/^\d$/.test(filteredTokens[index])) continue;
+    const digits: string[] = [];
+    while (index < filteredTokens.length && /^\d$/.test(filteredTokens[index])) {
+      digits.push(filteredTokens[index]);
+      index += 1;
+    }
+    if (digits.length >= 2 && digits.length <= 4) {
+      return {
+        candidateNumber: digits.join(''),
+        confidenceScore: tesseractConfidence,
+        extractedTokens: tokens
+      };
+    }
   }
 
   // Pattern 2: Digits followed by letter (e.g. "101A", "45B")
@@ -47,7 +78,7 @@ export function parseBusNumberFromOCR(rawText: string, tesseractConfidence: numb
   if (alphanumericMatches.length > 0) {
     return {
       candidateNumber: alphanumericMatches[0],
-      confidenceScore: Math.max(tesseractConfidence, 80),
+      confidenceScore: tesseractConfidence,
       extractedTokens: tokens
     };
   }
@@ -57,7 +88,7 @@ export function parseBusNumberFromOCR(rawText: string, tesseractConfidence: numb
   if (embeddedMatch && embeddedMatch[1]) {
     return {
       candidateNumber: embeddedMatch[1],
-      confidenceScore: Math.max(tesseractConfidence, 70),
+      confidenceScore: tesseractConfidence,
       extractedTokens: tokens
     };
   }
@@ -69,7 +100,7 @@ export function parseBusNumberFromOCR(rawText: string, tesseractConfidence: numb
     if (extractedNum.length >= 2 && extractedNum.length <= 4) {
       return {
         candidateNumber: extractedNum,
-        confidenceScore: Math.max(tesseractConfidence, 60),
+        confidenceScore: tesseractConfidence,
         extractedTokens: tokens
       };
     }

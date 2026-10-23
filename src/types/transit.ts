@@ -45,6 +45,7 @@ export interface TransitRoute {
 export interface OCRResult {
   rawText: string;
   candidateNumber: string | null;
+  destination?: string | null;
   confidence: number;
   isReliable: boolean;
   source: 'camera' | 'upload' | 'preset' | 'manual';

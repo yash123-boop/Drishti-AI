@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Mic, MicOff, Search, Navigation, MapPin, Sparkles, ArrowRight } from 'lucide-react';
+import { Mic, MicOff, Navigation, MapPin, ArrowRight, BusFront, Bot, Wallet, ShieldAlert } from 'lucide-react';
 import { speechRecognition } from '../modules/voice/speechRecognition';
 import { speechSynth } from '../modules/voice/speechSynthesis';
 import { audioChimes } from '../modules/voice/audioChimes';
 import { hapticEngine } from '../modules/voice/hapticEngine';
+import { LiveLocationMap } from './LiveLocationMap';
+import { LucknowPlaces } from './LucknowPlaces';
+import { TripPlanner } from './TripPlanner';
+import { JourneyAssistant } from './JourneyAssistant';
 const translations: Record<string, Record<string, string>> = {
   'en-IN': {
     title: 'Where would you like to travel?',
@@ -139,17 +143,25 @@ const translations: Record<string, Record<string, string>> = {
 interface DestinationScreenProps {
   onSearch: (destination: string) => void;
   language: string;
+  onOpenEmergency: () => void;
+  onScanBus: () => void;
+  onStartJourney: (route: import('../types/transit').TransitRoute) => void;
 }
 
 export const DestinationScreen: React.FC<DestinationScreenProps> = ({
   onSearch,
   language,
+  onOpenEmergency,
+  onScanBus,
+  onStartJourney,
 }) => {
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceError, setVoiceError] = useState<string | null>(null);
 const t = translations[language] ?? translations['en-IN'];
+  const [plannedDestination, setPlannedDestination] = useState('');
+  const [assistantQuestion, setAssistantQuestion] = useState('');
   const handleStartVoice = () => {
     audioChimes.play('tap');
     hapticEngine.tap();
@@ -176,7 +188,8 @@ const t = translations[language] ?? translations['en-IN'];
       },
       (status) => {
         setIsListening(status);
-      }
+      },
+      language
     );
   };
 
@@ -188,14 +201,6 @@ const t = translations[language] ?? translations['en-IN'];
     hapticEngine.tap();
     speechSynth.announceDestinationRecognized(inputText.trim());
     onSearch(inputText.trim());
-  };
-
-  const handleQuickSelect = (destination: string) => {
-    setInputText(destination);
-    audioChimes.play('tap');
-    hapticEngine.tap();
-    speechSynth.announceDestinationRecognized(destination);
-    onSearch(destination);
   };
 
   return (
@@ -216,7 +221,27 @@ const t = translations[language] ?? translations['en-IN'];
 </div>
   
 
-      {/* Primary Voice Mic Action */}
+<LiveLocationMap />
+
+      <section aria-labelledby="dashboard-quick-actions" className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+        <h2 id="dashboard-quick-actions" className="mb-3 text-lg font-extrabold">Quick actions</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <button type="button" onClick={onScanBus} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-blue-700 px-3 py-3 font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
+            <BusFront aria-hidden="true" /> Scan / find bus
+          </button>
+          <button type="button" onClick={() => document.getElementById('trip-planner')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-emerald-700 px-3 py-3 font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300">
+            <Wallet aria-hidden="true" /> Plan trip
+          </button>
+          <button type="button" onClick={() => document.getElementById('journey-assistant')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-violet-700 px-3 py-3 font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+            <Bot aria-hidden="true" /> Ask journey AI
+          </button>
+          <button type="button" onClick={onOpenEmergency} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-rose-700 px-3 py-3 font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-300">
+            <ShieldAlert aria-hidden="true" /> SOS
+          </button>
+        </div>
+      </section>
+
+{/* Primary Voice Mic Action */}
       <div className="flex flex-col items-center justify-center mb-10">
         <button
           onClick={handleStartVoice}
@@ -289,52 +314,27 @@ const t = translations[language] ?? translations['en-IN'];
         </div>
       </form>
 
-      {/* Quick Demonstration Dest Buttons */}
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-          <span>Demonstration Destinations</span>
-          <span>Click to test instantly</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          <button
-            onClick={() => handleQuickSelect('Hazratganj')}
-            className="p-3 text-left rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/60 dark:bg-slate-800/80 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm text-blue-950 dark:text-blue-100">Hazratganj</span>
-              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950 px-1.5 py-0.5 rounded">
-                Bus 101 / 305
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">Main Buildathon Scenario</p>
-          </button>
-
-          <button
-            onClick={() => handleQuickSelect('Gomti Nagar Extension')}
-            className="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm text-slate-900 dark:text-white">Gomti Nagar</span>
-              <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
-                Bus 204
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">Tech Shuttle Line</p>
-          </button>
-
-          <button
-            onClick={() => handleQuickSelect('Chaudhary Charan Singh International Airport')}
-            className="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-sm text-slate-900 dark:text-white">Airport T2</span>
-              <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
-                Bus 502
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">Express Route</p>
-          </button>
-        </div>
+      <LucknowPlaces
+        onPlanTrip={(placeName) => {
+          setPlannedDestination(placeName);
+          requestAnimationFrame(() => document.getElementById('trip-planner')?.scrollIntoView({ behavior: 'smooth' }));
+        }}
+        onAskAI={(question) => {
+          setAssistantQuestion(question);
+          requestAnimationFrame(() => document.getElementById('journey-assistant')?.scrollIntoView({ behavior: 'smooth' }));
+        }}
+      />
+      <div className="mb-8 space-y-6">
+        <TripPlanner
+          initialDestination={plannedDestination}
+          onInitialDestinationHandled={() => setPlannedDestination('')}
+          onStartJourney={onStartJourney}
+        />
+        <JourneyAssistant
+          initialQuestion={assistantQuestion}
+          onInitialQuestionHandled={() => setAssistantQuestion('')}
+          language={language}
+        />
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import type { TransitRoute } from '../types/transit';
 import { speechSynth } from '../modules/voice/speechSynthesis';
 import { audioChimes } from '../modules/voice/audioChimes';
 import { hapticEngine } from '../modules/voice/hapticEngine';
+import { RouteMapPanel } from './RouteMapPanel';
+import { DEMO_FARES_INR } from '../modules/routes/demoFareData';
 
 interface RouteSelectionScreenProps {
   destinationQuery: string;
@@ -28,7 +30,7 @@ export const RouteSelectionScreen: React.FC<RouteSelectionScreenProps> = ({
   const handleSpeakRouteSummary = (route: TransitRoute) => {
     audioChimes.play('tap');
     speechSynth.speak(
-      `Bus ${route.busNumber}, ${route.routeName}. From ${route.origin} to ${route.destination}. ${route.stops.length} stops. Departs every ${route.frequencyMinutes} minutes.`
+      `Bus ${route.busNumber}, ${route.routeName}. From ${route.origin} to ${route.destination}. Demo one-way fare ${DEMO_FARES_INR[route.id] ?? 'not available'} rupees. ${route.stops.length} stops. Sample frequency every ${route.frequencyMinutes} minutes.`
     );
   };
 
@@ -54,6 +56,8 @@ export const RouteSelectionScreen: React.FC<RouteSelectionScreenProps> = ({
           </p>
         </div>
       </div>
+
+      <RouteMapPanel destinationQuery={destinationQuery} />
 
       {routes.length === 0 ? (
         <div className="text-center py-12 px-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
@@ -100,10 +104,15 @@ export const RouteSelectionScreen: React.FC<RouteSelectionScreenProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1 font-bold text-emerald-800 dark:text-emerald-300">
+                    <span aria-hidden="true">₹</span>
+                    <span>Demo fare: ₹{DEMO_FARES_INR[route.id] ?? '—'} one way</span>
+                  </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>Every {route.frequencyMinutes} mins</span>
                   </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Sample fares and frequencies are estimates for demonstration; check with the operator for real information.</p>
                   <div className="flex items-center gap-1">
                     <Bus className="w-3.5 h-3.5 text-slate-400" />
                     <span>{route.stops.length} stops</span>

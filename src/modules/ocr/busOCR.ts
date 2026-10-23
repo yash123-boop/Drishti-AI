@@ -2,7 +2,7 @@
  * Bus Board OCR Engine using Tesseract.js with Camera Stream & File Upload
  */
 
-import { parseBusNumberFromOCR } from './textParser';
+import { parseBusNumberFromOCR, parseDestinationFromOCR } from './textParser';
 import type { OCRResult } from '../../types/transit';
 
 export type OCRProgressCallback = (progress: number, status: string) => void;
@@ -12,7 +12,8 @@ class BusOCRManager {
 
   public async processImage(
     imageSource: string | HTMLCanvasElement | File,
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
+    source: 'camera' | 'upload' | 'preset' = 'upload'
   ): Promise<OCRResult> {
     try {
       onProgress?.(10, 'Initializing OCR engine...');
@@ -36,31 +37,30 @@ class BusOCRManager {
       const rawText = result.data.text || '';
       const confidence = Math.round(result.data.confidence || 0);
       const parsed = parseBusNumberFromOCR(rawText, confidence);
+      const destination = parseDestinationFromOCR(rawText);
 
       onProgress?.(100, 'Recognition complete');
 
       return {
         rawText,
         candidateNumber: parsed.candidateNumber,
+        destination,
         confidence: parsed.confidenceScore,
         isReliable: parsed.candidateNumber !== null && parsed.confidenceScore >= 50,
-        source: typeof imageSource === 'string' ? 'preset' : 'upload',
+        source,
       };
-    } catch (err: any) {
-      console.warn('Tesseract OCR engine encountered an issue:', err);
-      // Honest fallback message rather than crashing
-      return {
-        rawText: '',
-        candidateNumber: null,
-        confidence: 0,
-        isReliable: false,
-        source: 'upload',
-      };
+    } catch (error) {
+      console.error('Unable to process bus-board image with OCR:', error);
+      throw new Error('Bus-board OCR processing failed. Please try another image or scan again.');
     }
   }
 
   // Camera Management
-  public async startCamera(videoElement: HTMLVideoElement): Promise<boolean> {
+  public async startCamera(videoElement: HTMLVideoElement): Promise<void> {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error('Camera unavailable on this device or browser.');
+    }
+
     try {
       if (this.mediaStream) {
         this.stopCamera();
@@ -74,14 +74,13 @@ class BusOCRManager {
         },
         audio: false,
       };
-
       this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       videoElement.srcObject = this.mediaStream;
       await videoElement.play();
-      return true;
-    } catch (err) {
-      console.warn('Camera stream permission denied or unavailable:', err);
-      return false;
+      await videoElement.play();
+    } catch (error) {
+      this.stopCamera();
+      throw error;
     }
   }
 

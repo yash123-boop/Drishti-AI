@@ -61,7 +61,8 @@ class SpeechRecognitionManager {
   public startListening(
     onResult: SpeechCallback,
     onError: ErrorCallback,
-    onStatusChange?: StatusCallback
+    onStatusChange?: StatusCallback,
+    language: string = 'en-US'
   ) {
     if (!this.isSupported()) {
       onError('Speech recognition is not supported in this browser. Please use manual entry.');
@@ -80,7 +81,7 @@ class SpeechRecognitionManager {
 
       this.recognition.continuous = false;
       this.recognition.interimResults = false;
-      this.recognition.lang = 'en-US';
+      this.recognition.lang = language;
 
       this.recognition.onstart = () => {
         this.isListening = true;

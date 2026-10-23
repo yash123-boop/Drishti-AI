@@ -78,8 +78,11 @@ export const OfflineMapBanner: React.FC<OfflineMapBannerProps> = ({ currentRoute
       audioChimes.play('success');
       hapticEngine.tap();
       speechSynth.speak(
-        `Map tiles for ${activeRoute.routeName} successfully cached in Service Worker. Navigation is fully available offline.`
+        `${result.cachedCount} of ${routeTiles.length} real map tiles cached for ${activeRoute.routeName}.`
       );
+    } else {
+      audioChimes.play('wrong-bus');
+      speechSynth.speak('No map tiles could be cached. Check your internet connection and try again.');
     }
   };
 
@@ -293,7 +296,7 @@ export const OfflineMapBanner: React.FC<OfflineMapBannerProps> = ({ currentRoute
           {cacheMeta && (
             <div className="flex flex-wrap items-center justify-between gap-4 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-400 font-mono">
               <div>
-                Cache Store: <strong className="text-slate-200">drishti-offline-map-tiles-v1</strong>
+                Cache Store: <strong className="text-slate-200">drishti-offline-map-tiles-v2</strong>
               </div>
               <div>
                 Stored Tiles: <strong className="text-emerald-400">{cacheMeta.cachedTiles}</strong>

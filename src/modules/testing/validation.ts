@@ -8,6 +8,10 @@ import { searchRoutesByDestination } from '../routes/routeSelector';
 import { matchBusToRoute, normalizeBusNumber } from '../routes/routeMatcher';
 import { parseBusNumberFromOCR } from '../ocr/textParser';
 import { evaluateStopProgress } from '../journey/stopManager';
+import { analyzeDemoBusBoard } from '../ai/busDetection';
+import { findJourneyOptions, findNearestDemoStop } from '../routes/journeyPlanner';
+import { answerJourneyQuestion } from '../ai/journeyAssistant';
+import type { OCRResult } from '../../types/transit';
 import type { TestScenarioResult } from '../../types/transit';
 
 export function runValidationSuite(): TestScenarioResult[] {
@@ -152,6 +156,73 @@ export function runValidationSuite(): TestScenarioResult[] {
     results.push({
       id: 'test-6-missing-dest',
       name: 'Scenario 3.B: Graceful Handling for Unknown Destination',
+      passed: false,
+      details: `Error: ${err.message}`,
+    });
+  }
+
+  // Test 7: Confidence-gated AI-demo bus detection
+  try {
+    const baseOCR: OCRResult = {
+      rawText: 'BUS 101',
+      candidateNumber: '101',
+      confidence: 92,
+      isReliable: true,
+      source: 'upload',
+    };
+    const verified = analyzeDemoBusBoard(baseOCR);
+    const uncertain = analyzeDemoBusBoard({ ...baseOCR, confidence: 59 });
+    const unknown = analyzeDemoBusBoard({ ...baseOCR, candidateNumber: '999' });
+    const missing = analyzeDemoBusBoard({ ...baseOCR, candidateNumber: null });
+    const passed =
+      verified.verification === 'verified' &&
+      uncertain.verification === 'uncertain' &&
+      unknown.verification === 'failed' &&
+      missing.verification === 'not-detected';
+    results.push({
+      id: 'test-7-confidence-detection',
+      name: 'AI Demo Detection: Confidence and Bus Verification',
+      passed,
+      details: passed
+        ? 'High-confidence known bus verified; uncertain, unknown, and missing readings were not accepted.'
+        : `Unexpected detection states: ${verified.verification}, ${uncertain.verification}, ${unknown.verification}, ${missing.verification}.`,
+    });
+  } catch (err: any) {
+    results.push({
+      id: 'test-7-confidence-detection',
+      name: 'AI Demo Detection: Confidence and Bus Verification',
+      passed: false,
+      details: `Error: ${err.message}`,
+    });
+  }
+
+  // Test 8: Route-backed trip costs, nearest stop, and no invented connection
+  try {
+    const options = findJourneyOptions('Charbagh Railway Station', 'Hazratganj');
+    const nearest = findNearestDemoStop(26.8322, 80.92);
+    const unsupported = answerJourneyQuestion('How can I go from Charbagh Railway Station to Bara Imambara?');
+    const budgetAnswer = answerJourneyQuestion('Show trips under ₹500');
+    const passed =
+      options.some((option) => option.route.busNumber === '101') &&
+      options.every((option) => option.roundTripTotalInr === 2 * option.busFareInr + option.foodEstimateInr + option.entryFeeEstimateInr + option.localTransportEstimateInr + option.miscellaneousInr) &&
+      nearest?.name === 'Charbagh Railway Station' &&
+      nearest.distanceMeters < 1 &&
+      unsupported.includes('no direct') &&
+      !unsupported.includes('BUS-') &&
+      budgetAnswer.includes('route-backed demo trip') &&
+      !budgetAnswer.includes('BUS-500');
+    results.push({
+      id: 'test-8-journey-planning',
+      name: 'Trip Planner: Demo Route Costs and Grounded Responses',
+      passed,
+      details: passed
+        ? 'Hazratganj has a route-backed INR estimate, nearest-stop matching is accurate, unsupported trips are not invented, and budget amounts are not parsed as bus numbers.'
+        : 'Route, round-trip expense totals, nearest stop, or unsupported-trip handling did not match expectations.',
+    });
+  } catch (err: any) {
+    results.push({
+      id: 'test-8-journey-planning',
+      name: 'Trip Planner: Demo Route Costs and Grounded Responses',
       passed: false,
       details: `Error: ${err.message}`,
     });

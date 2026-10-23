@@ -3,7 +3,7 @@
  * Explicitly caches map tile data and transit route segments for offline navigation
  */
 
-const CACHE_NAME = 'drishti-offline-map-tiles-v1';
+const CACHE_NAME = 'drishti-offline-map-tiles-v2';
 const DATA_CACHE_NAME = 'drishti-transit-data-v1';
 
 // Install event - activate immediately
@@ -45,7 +45,7 @@ function generateOfflineTileSvg(url) {
     status: 200,
     headers: {
       'Content-Type': 'image/svg+xml',
-      'X-Offline-Fallback': 'true'
+      'X-Offline-Fallback': 'true',
     }
   });
 }
@@ -66,20 +66,20 @@ self.addEventListener('fetch', (event) => {
       caches.open(CACHE_NAME).then(async (cache) => {
         // CacheFirst: Check if already in cache
         const cachedResponse = await cache.match(event.request);
-        if (cachedResponse) {
+        if (cachedResponse && cachedResponse.headers.get('X-Offline-Fallback') !== 'true') {
           return cachedResponse;
         }
 
         // Otherwise attempt network fetch
         try {
-          const networkResponse = await fetch(event.request, { mode: 'cors' });
-          if (networkResponse && networkResponse.status === 200) {
+          const networkResponse = await fetch(event.request);
+          if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
         } catch (err) {
           // If offline and not in cache, return synthesized fallback tile
-          return generateOfflineTileSvg(url);
+          return cachedResponse || generateOfflineTileSvg(url);
         }
       })
     );
@@ -114,32 +114,30 @@ self.addEventListener('message', async (event) => {
   const data = event.data;
   if (!data || !data.type) return;
 
-  const client = event.source;
+  const client = event.ports[0] || event.source;
 
   if (data.type === 'CACHE_ROUTE_TILES') {
     const urls = data.tileUrls || [];
     const cache = await caches.open(CACHE_NAME);
     let completed = 0;
+    let cachedCount = 0;
 
     for (const url of urls) {
       try {
         // Check if already in cache
         const match = await cache.match(url);
-        if (!match) {
+        if (match && match.headers.get('X-Offline-Fallback') !== 'true') {
+          cachedCount++;
+        } else {
           // Fetch and store
-          const response = await fetch(url, { mode: 'cors' });
-          if (response.ok) {
+          const response = await fetch(url);
+          if (response.ok || response.type === 'opaque') {
             await cache.put(url, response);
-          } else {
-            // Save synthetic fallback tile if external tile provider is blocked in sandbox
-            const fallback = generateOfflineTileSvg(url);
-            await cache.put(url, fallback);
+            cachedCount++;
           }
         }
       } catch (err) {
-        // Fallback tile on network failure/CORS
-        const fallback = generateOfflineTileSvg(url);
-        await cache.put(url, fallback);
+        console.warn('Could not cache map tile:', url, err);
       }
 
       completed++;
@@ -156,7 +154,7 @@ self.addEventListener('message', async (event) => {
     if (client && client.postMessage) {
       client.postMessage({
         type: 'CACHE_COMPLETE',
-        totalCached: urls.length,
+        totalCached: cachedCount,
         cacheName: CACHE_NAME
       });
     }

@@ -6,7 +6,7 @@
 import { getRouteTileUrls } from '../routes/routeData';
 import type { TransitRoute, RouteTileInfo, RouteTileCacheState } from '../../types/transit';
 
-const CACHE_NAME = 'drishti-offline-map-tiles-v1';
+const CACHE_NAME = 'drishti-offline-map-tiles-v2';
 
 type ProgressCallback = (progress: { completed: number; total: number; currentUrl?: string }) => void;
 
@@ -75,7 +75,7 @@ class MapTileCacheService {
           } else if (data.type === 'CACHE_COMPLETE') {
             // Save metadata to localStorage
             this.saveCacheMetadata(route.id, route.routeName, data.totalCached);
-            resolve({ success: true, cachedCount: data.totalCached });
+            resolve({ success: data.totalCached > 0, cachedCount: data.totalCached });
           }
         };
 
@@ -101,23 +101,22 @@ class MapTileCacheService {
     try {
       const cache = await caches.open(CACHE_NAME);
       let completed = 0;
+      let cachedCount = 0;
 
       for (const url of tileUrls) {
         try {
           const match = await cache.match(url);
-          if (!match) {
-            // Fetch or mock SVG tile
-            const svgTile = this.generateLocalTileSvg(url);
-            await cache.put(url, new Response(svgTile, {
-              headers: { 'Content-Type': 'image/svg+xml' }
-            }));
+          if (match && match.headers.get('X-Offline-Fallback') !== 'true') {
+            cachedCount++;
+          } else {
+            const response = await fetch(url);
+            if (response.ok || response.type === 'opaque') {
+              await cache.put(url, response);
+              cachedCount++;
+            }
           }
         } catch {
-          // Store fallback
-          const svgTile = this.generateLocalTileSvg(url);
-          await cache.put(url, new Response(svgTile, {
-            headers: { 'Content-Type': 'image/svg+xml' }
-          }));
+          // Leave unavailable tiles uncached so a later online request can retry.
         }
 
         completed++;
@@ -128,8 +127,8 @@ class MapTileCacheService {
         });
       }
 
-      this.saveCacheMetadata(route.id, route.routeName, tileUrls.length);
-      return { success: true, cachedCount: tileUrls.length };
+      this.saveCacheMetadata(route.id, route.routeName, cachedCount);
+      return { success: cachedCount > 0, cachedCount };
     } catch (err) {
       console.error('Failed to cache tiles directly:', err);
       return { success: false, cachedCount: 0 };
@@ -196,21 +195,6 @@ class MapTileCacheService {
     } catch {
       // Fallback
     }
-  }
-
-  private generateLocalTileSvg(url: string): string {
-    const parsed = url.match(/\/(\d+)\/(\d+)\/(\d+)/) || [null, '14', '0', '0'];
-    const z = parsed[1] || '14';
-    const x = parsed[2] || '0';
-    const y = parsed[3] || '0';
-
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-      <rect width="256" height="256" fill="#0f172a"/>
-      <path d="M0,64 L256,64 M0,128 L256,128 M0,192 L256,192 M64,0 L64,256 M128,0 L128,256 M192,0 L192,256" stroke="#334155" stroke-width="2" stroke-dasharray="4,4"/>
-      <path d="M20,200 Q128,120 230,40" stroke="#0284c7" stroke-width="8" fill="none" stroke-linecap="round"/>
-      <circle cx="128" cy="120" r="7" fill="#facc15" stroke="#ffffff" stroke-width="2"/>
-      <text x="128" y="240" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">OFFLINE TILE ${z}/${x}/${y}</text>
-    </svg>`;
   }
 }
 

@@ -18,6 +18,7 @@ import type { JourneyState } from '../types/transit';
 import { speechSynth } from '../modules/voice/speechSynthesis';
 import { audioChimes } from '../modules/voice/audioChimes';
 import { hapticEngine } from '../modules/voice/hapticEngine';
+import { DEMO_FARES_INR } from '../modules/routes/demoFareData';
 
 interface JourneyGuidanceScreenProps {
   journeyState: JourneyState;
@@ -46,11 +47,11 @@ export const JourneyGuidanceScreen: React.FC<JourneyGuidanceScreenProps> = ({
     audioChimes.play('tap');
     hapticEngine.tap();
     if (hasArrived) {
-      speechSynth.speak(`You have arrived at your final destination: ${route.destination}. Please exit safely.`);
+      speechSynth.speak(`You have arrived at your final destination: ${route.destination}. The sample one-way bus fare was ${DEMO_FARES_INR[route.id] ?? 'not listed'} rupees. Please exit safely.`);
     } else if (isApproaching) {
-      speechSynth.speak(`Warning: Destination approaching. Current stop: ${currentStop.name}. Next stop is your final stop: ${route.destination}.`);
+      speechSynth.speak(`Warning: Destination approaching. Current stop: ${currentStop.name}. Next stop is your final stop: ${route.destination}. Sample one-way bus fare ${DEMO_FARES_INR[route.id] ?? 'not listed'} rupees.`);
     } else {
-      speechSynth.speak(`Current stop: ${currentStop.name}. ${currentStop.landmark}. Next stop: ${nextStop?.name || 'Final stop'}.`);
+      speechSynth.speak(`Current stop: ${currentStop.name}. ${currentStop.landmark}. Next stop: ${nextStop?.name || 'Final stop'}. Sample one-way bus fare ${DEMO_FARES_INR[route.id] ?? 'not listed'} rupees.`);
     }
   };
 
@@ -76,6 +77,7 @@ export const JourneyGuidanceScreen: React.FC<JourneyGuidanceScreenProps> = ({
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
             Heading to: {route.destination}
           </h2>
+          <p className="mt-1 text-sm font-bold text-emerald-800 dark:text-emerald-300">Estimated demo fare: ₹{DEMO_FARES_INR[route.id] ?? '—'} one way</p>
         </div>
 
         {/* Progress Pill & Stop Counter */}

@@ -130,6 +130,19 @@ export const BusConfirmationScreen: React.FC<BusConfirmationScreenProps> = ({
           )}
         </div>
 
+        {ocrResult.source !== 'manual' && (
+          <section
+            aria-label="Extracted bus board text"
+            className="space-y-2 rounded-xl border border-slate-300 bg-slate-50 p-4 text-left dark:border-slate-600 dark:bg-slate-900"
+            aria-live="polite"
+          >
+            <h2 className="font-bold">Extracted information</h2>
+            <p><strong>Bus number:</strong> {ocrResult.candidateNumber ?? 'Not detected'}</p>
+            <p><strong>Destination:</strong> {ocrResult.destination ?? 'Not detected'}</p>
+            <p><strong>Recognized text:</strong> {ocrResult.rawText.trim() || 'No readable text detected.'}</p>
+          </section>
+        )}
+
         {/* Dynamic Match Warning / Banner */}
         {candidateNumber && (
           <div>
