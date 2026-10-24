@@ -1,139 +1,342 @@
-# Drishti AI — Voice-First Accessible Transit Companion
+# 🚌 Drishti AI — Accessible Transit Assistant
 
-> **A voice-first, camera-assisted public transportation companion engineered for blind and visually impaired commuters.**
+**Making public transportation more accessible for visually impaired and low-vision commuters.**
 
-Drishti AI solves the critical everyday challenges faced by visually impaired passengers navigating public transit: identifying upcoming buses, verifying whether an arriving vehicle matches their intended route, tracking stop progression in real-time with spoken landmarks, receiving distinct tactile haptic vibration cues before critical stops, and accessing a confirmation-based emergency SOS safety flow.
+Drishti AI is a voice-first accessible transit assistant designed to help visually impaired (VI) and low-vision commuters explore destinations, identify buses, plan trips within their budget, navigate routes using interactive maps, and access emergency assistance.
 
----
+The application combines voice interaction, bus-board text recognition (OCR), route visualization, journey guidance, and accessibility-focused controls in a unified web interface.
 
-## 🌟 Key Features
-
-1. **Audio Navigation & Spoken Guidance**:
-   - Turn-by-turn spoken guidance via the browser `SpeechSynthesis` API.
-   - Localized voice guidance and destination speech recognition in English, Hindi, Bengali, Marathi, Tamil, Telugu, Kannada, Malayalam, Gujarati, and Punjabi.
-   - Uses an installed browser voice when available, with Google Cloud Text-to-Speech as the server-side fallback; microphone recognition requires browser support.
-   - A language-selection screen appears when the site opens. Selecting a language speaks the welcome message, opens the app in that language, and saves the preference on the device.
-   - Low-latency synthesized earcons (Web Audio API) for stop arrival, destination alerts, and wrong-bus warnings.
-   - Hands-free voice destination input via the `SpeechRecognition` API.
-
-2. **Real-Time Haptic Tactile Feedback**:
-   - Distinct vibration patterns using `navigator.vibrate`:
-     - Approaching stop: `[100, 50, 100]`
-     - Destination approaching (1 stop remaining): `[300, 100, 300, 100, 300]`
-     - Destination reached: `[500, 150, 500, 150, 500, 150, 800]`
-     - Wrong bus alert: `[400, 100, 400, 100, 400]`
-     - Emergency SOS: `[800, 200, 800, 200, 800]`
-   - Visual Tactile Radar monitor for devices without physical vibration motors.
-
-3. **Bus-Number Camera & OCR Scanner**:
-   - Client-side OCR via `Tesseract.js` recognizing LED route display boards.
-   - Live camera stream capture + image upload.
-   - Instant built-in test board presets (Bus 101, Bus 204, Blurry Board) for rapid buildathon demonstration.
-   - OCR reports the detected bus number, destination when recognized, and extracted board text. Failed scans show a retry action; manual bus-number entry is also available.
-   - The scanner shows OCR confidence as High/Medium/Low and only offers automatic database verification for high-confidence readings. Uncertain readings request a manual check; a database match alone does not prove the bus is physically present.
-   - Camera guidance labels (bus, stop, person, road, entrance, exit, signboard and obstacle) are selectable simulation examples—not computer-vision detections. Test-board confidence is simulated; actual camera/upload confidence comes from OCR.
-   - A demo bus lookup accepts `BUS-101`, `BUS-102`, `BUS-204`, `BUS-305`, or `BUS-502` (digits alone are accepted too). The displayed bus location, route, and ETA are simulated sample data, not live GPS.
-
-4. **Public Transit & Offline Mapping**:
-   - Demonstration multi-stop transit routes stored in local offline cache (`data/routes.json` / `localStorage`); actual map tiles are cached only when downloaded successfully.
-   - Stop progression simulator with manual advance ("Simulate Next Stop") and automated timed progression (6s auto-advance).
-   - Interactive OpenStreetMap with zoom and pan, a permission-based live-location map on the destination dashboard, and current-location road-route alternatives in route search.
-   - Route alternatives include fastest and fewest-turn choices. Location tracking starts only when the traveler chooses to show their location.
-   - Searchable Lucknow city place finder, popular landmark shortcuts, and search filters for heritage, food/markets, transport, parks, healthcare, education, and worship. Selecting a result plots its mapped coordinates and offers a route from the current location.
-   - Place search needs internet access and uses OpenStreetMap Nominatim in a bounded Lucknow-area view. Search results are limited by the service and mapped community data; they are not a guarantee of literally every address or point of interest.
-   - Each selected place can show four deterministic, generated demo bus numbers, sample hub connections, and illustrative map lines.
-   - Generated bus numbers, route lines, estimated distances, and frequencies are fictional demo content, not actual Lucknow bus services, stops, schedules, or navigation. The app does not include an official complete bus GTFS/live fleet feed.
-   - The dashboard includes a place catalogue with curated popular Lucknow landmarks, categories, visit/accessibility notes, and indicative INR expense ranges. OpenStreetMap search is still available separately.
-   - Route lookup requires an internet connection and shares the chosen origin/destination with OpenStreetMap's Nominatim and OSRM public services. The fewest-turn option is not a verified safety rating; routes are road estimates, not accessible walking or public-transit directions.
-
-5. **Trip Planner & Journey Assistant**:
-   - Compare route-backed trips by estimated INR budget, one-way travel time, cheapest/fastest/balanced preference, and the demo bus type's accessibility description. Set a preset/custom budget and optional travel date; use current location to select a nearby geocoded demo stop (within 1 km), then receive an estimated one-way/return fare and a sample day itinerary.
-   - Budget breakdowns include round-trip bus fare, food, entry, local transport, and miscellaneous estimates. Values and itinerary timings are illustrative, not verified venue prices, live schedules, or guaranteed accessible service.
-   - Ask typed or spoken questions about available routes, supported stops, demo buses, fares, frequency, travel time, and place expenses; listen to answers with speech synthesis. The assistant remains available across app screens and changes its guidance for destination selection, boarding, scanning, verification, journey progress, arrival, and emergency states.
-   - Assistant journey status is derived from the app's selected route and journey simulator, not a live bus/GPS feed. Answers use local app data and state when a route is missing—there is no generative AI or live fare lookup. Text answers remain available if speech output is unavailable; users can type if speech recognition is unsupported.
-
-6. **Emergency SOS Safety Assistance**:
-   - Select a service (Police, Ambulance, Fire, Medical, or General Help), review a confirmation step, and explicitly confirm a demo SOS.
-   - Emergency phone numbers are configured centrally in `src/modules/emergency/emergencyServices.ts`; a separate user-initiated `tel:` link is available after confirmation.
-   - Confirmation records a demo state in the UI only. It does not send an alert, share location, or place a call automatically. A local audible alarm can be started or stopped explicitly.
-   - English and Hindi messages are provided for the SOS and bus-lookup flows.
-
-7. **WCAG 2.2 AAA Accessibility**:
-   - Ultra High Contrast mode (pitch black with vivid yellow/cyan accents).
-   - Text scaling (Normal 100%, Large 118%, Extra-Large 135%).
-   - Dynamic `aria-live` region for screen readers.
-   - Global keyboard shortcuts (`Alt+V`, `Alt+S`, `Alt+N`, `Alt+H`, `Alt+R`, `Space`).
-
-8. **Automated Verification Suite**:
-   - In-app test runner executing all 9 transit and safety verification scenarios with a single click, including confidence-gated bus detection, route-backed trip-cost checks, and journey-state-aware assistant responses.
+> **Project Status:** Working prototype / demonstration application. Some transit information, route details, fares, and detection results use demonstration data and should not be treated as verified live transit information.
 
 ---
 
-## 👥 Team Responsibilities
+## 📸 Application Screenshots
 
-- **Ritik Pathak**: Frontend and UI development (all 13 accessible screens, touch-friendly layouts, responsive design).
-- **Yash Srivastava**: Core application logic, route management, journey engine, and module integration.
-- **Akhand Pratap Singh**: Voice recognition, speech synthesis, bus-number OCR, audio chimes, and text parsing.
-- **Mohamad Rehan**: Accessibility, keyboard navigation, screen-reader live announcements, emergency SOS safety, and validation suite.
+### 1. Travel Dashboard
+The main interface provides voice interaction, destination search, quick actions, and destination discovery.
+
+![Drishti AI Travel Dashboard](screenshots/travel-dashboard.png)
+
+### 2. Explore Destinations
+Browse popular places, cultural landmarks, shopping areas, parks, transport hubs, and other destinations across Lucknow.
+
+![Destination Explorer](screenshots/destination-explorer.png)
+
+### 3. Trip Planner & Budget
+Choose your starting point, destination, budget, travel preferences, and optional travel date to explore suitable demonstration routes.
+
+![Trip Planner](screenshots/trip-planner.png)
+
+### 4. AI Journey Assistant
+Interact with the journey assistant to ask questions about buses, destinations, fares, and available demonstration routes.
+
+![AI Journey Assistant](screenshots/journey-assistant.png)
+
+### 5. Live Mapping & Route Visualization
+View your location and destination on an interactive map, compare route options, and explore journey information.
+
+![Live Route Map](screenshots/live-route-map.png)
+
+### 6. Emergency Assistance
+Access an emergency assistance interface with options for police, ambulance, fire services, and general emergency help.
+
+![Emergency Assistance](screenshots/emergency-assistance.png)
+
+### 7. AI Bus Detection & OCR
+Use the camera or upload a photograph of a bus display to extract text and identify a potential bus number and destination.
+
+![AI Bus Detection](screenshots/bus-detection.png)
+
+### 8. Bus Verification
+Compare extracted bus information against the application's demonstration bus database before proceeding to route verification.
+
+![Bus Verification](screenshots/bus-verification.png)
+
+### 9. Voice-Guided Journey
+Follow a stop-by-stop journey interface with current-stop information, next-stop guidance, journey progress, and voice announcements.
+
+![Voice-Guided Journey](screenshots/voice-guided-journey.png)
 
 ---
 
-## 🚀 Running the Project
+## ✨ Key Features
 
-### Development Server
+### 🗣️ 1. Voice-First Assistance
+- Voice interaction for hands-free use.
+- Speech-based destination input where browser support permits.
+- Spoken journey instructions and stop announcements.
+- Read-aloud functionality for assistant responses.
+- Keyboard shortcuts for accessibility.
+- Language selection for the application's supported interface and speech features.
+
+### 🚌 2. Bus Board Detection Using OCR
+- Capture bus-board images using a camera.
+- Upload existing bus-board photographs.
+- Extract text using Optical Character Recognition (OCR).
+- Identify potential bus numbers and destination names.
+- Display OCR confidence information.
+- Compare extracted information against the demonstration bus database.
+
+**Important:** OCR extracts text from images; it does not independently prove that a bus is the correct bus. Verification depends on the application's available route records. The current prototype does not use a trained computer-vision model for bus detection.
+
+### 🗺️ 3. Interactive Mapping & Route Visualization
+- Display maps using map-based visualization.
+- Request the user's current location with browser permission.
+- Show the starting point and destination.
+- Display route alternatives and estimated travel distances and durations.
+- Compare route options based on travel time and number of turns.
+
+**Important:** Route estimates may represent road routes rather than walking or public-transit directions. The application does not independently verify real-time traffic, pedestrian accessibility, road conditions, or safety.
+
+### 💰 4. Trip Planner & Budget Estimation
+- Select a starting location and destination.
+- Choose a predefined budget or enter a custom amount.
+- Set travel preferences.
+- Optionally select a travel date.
+- Explore available demonstration routes within the selected budget.
+- View estimated fares and journey durations.
+
+The planner is designed to help commuters make more informed travel decisions while considering their budget.
+
+### 🤖 5. AI Journey Assistant
+The journey assistant provides information using the application's available demonstration data.
+
+Users can ask questions about:
+- Available buses and routes.
+- Destination information.
+- Estimated fares.
+- Suggested journeys.
+- Budget-based travel options.
+
+The assistant should distinguish available route information from unavailable or unverified information.
+
+### 🚨 6. Emergency Assistance System
+The emergency assistance interface provides options for:
+- Police assistance.
+- Ambulance services.
+- Fire and rescue services.
+- General emergency assistance.
+
+The interface displays relevant emergency contact numbers and provides a way to initiate a phone call.
+
+**Safety notice:** The current demonstration interface does not automatically notify emergency services or dispatch assistance. Users must initiate the appropriate call. Emergency numbers and service availability should be verified for the relevant location.
+
+### ♿ 7. Accessibility-Focused Interface
+- Voice-first interaction.
+- Read-aloud controls.
+- Keyboard navigation and shortcuts.
+- High-contrast accessibility options.
+- Larger, clearly labeled interactive controls.
+- Simplified journey information.
+- Stop-by-stop journey progress.
+
+The goal is to reduce reliance on visual interaction and make transit information easier to access.
+
+### 🧭 8. Journey Tracking & Stop Guidance
+- Display the current journey and destination.
+- Present the current and next stops.
+- Show route progress.
+- Provide spoken stop announcements.
+- Allow users to simulate progression through stops.
+- Support manual or timed advancement where implemented.
+
+The current demonstration journey can use predefined stop sequences. This should not be confused with verified GPS-based arrival detection.
+
+---
+
+## 🛠️ Technology Stack
+
+The application uses browser-based technologies and mapping and OCR capabilities.
+
+| Technology | Purpose |
+|---|---|
+| HTML5 | Application structure |
+| CSS3 | Layout, styling, and responsive interface |
+| JavaScript | Application logic and interactions |
+| Web Speech API | Browser-supported speech recognition and speech synthesis |
+| Tesseract.js / OCR engine | Extracting text from bus-board images |
+| Leaflet.js | Interactive map rendering |
+| OpenStreetMap | Map data and visualization |
+| Browser Geolocation API | Accessing the user's location with permission |
+| Browser Media APIs | Camera access where supported |
+
+**Note:** Confirm the actual dependencies in `package.json` before treating this list as the final, verified technology inventory.
+
+---
+
+## ⚙️ Getting Started
+
+Follow these instructions to run the project locally.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) and npm, if the project uses a Node.js-based development environment.
+- [Visual Studio Code](https://code.visualstudio.com/) or another code editor.
+- A modern web browser.
+- Camera and location permissions for the corresponding features.
+
+### Installation
+
+**1. Clone the repository**
+
+Replace the example URL with your actual GitHub repository URL.
+
+```bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+```
+
+**2. Open the project directory**
+
+```bash
+cd <YOUR_PROJECT_FOLDER>
+```
+
+**3. Install dependencies**
+
+If the project contains a `package.json` file:
+
 ```bash
 npm install
+```
+
+**4. Start the development server**
+
+For a project configured with a Vite development script:
+
+```bash
 npm run dev
 ```
-Open `http://localhost:3000` in your web browser.
 
-### Multilingual Cloud Speech
-To enable spoken output when the device has no matching installed voice:
+Open the local URL printed in the terminal.
 
-1. Enable the Google Cloud Text-to-Speech API for a Google Cloud project and create an API key restricted to that API.
-2. Copy `.env.example` to `.env` and set `GOOGLE_CLOUD_TTS_API_KEY` locally. Never expose this key in frontend code or commit it.
-3. Run `npm run dev`; the server reports cloud speech availability at `/api/tts/status`.
-4. For production, build with `npm run build`, configure `GOOGLE_CLOUD_TTS_API_KEY` as a server secret, and run `npm start`.
-
-Cloud speech requires internet access and a Google Cloud project with billing/API access configured. Without the key, the app continues using installed browser voices.
-
-### Production Build
-```bash
-npm run build
-npm run preview
-```
+> If the project is a plain HTML, CSS, and JavaScript application without a Node.js development script, use the serving method configured for that project instead.
 
 ### Browser Permissions
-- **Microphone**: For voice destination input (`SpeechRecognition`).
-- **Camera**: For live bus board scanning (`navigator.mediaDevices.getUserMedia`).
-- **Audio**: For synthetic earcons and siren alarm (`AudioContext`).
-- **Vibration**: For tactile cues (`navigator.vibrate`).
-- **Location**: Optional, requested when the traveler selects "Use my location & show routes". Map tiles and route search require an internet connection.
+
+Some features require explicit browser permissions:
+
+- **Camera:** For capturing bus-board images.
+- **Location:** For accessing the user's current coordinates.
+- **Microphone:** For speech recognition.
+- **Audio:** For spoken instructions and read-aloud functionality.
+
+Use a secure context, such as `localhost` during development or HTTPS when deployed, where required by browser APIs.
 
 ---
 
-## 🧪 Demo Scenarios Guide
+## 🧪 How to Test the Application
 
-1. **Successful Journey**:
-   - Destination: Speak or select `"Hazratganj"`.
-   - Select: `"Bus 101 - Hazratganj Heritage Express"`.
-   - Scan: Click `"✓ Bus 101 Board"` preset.
-   - Confirm: Bus 101 matches Route 101 -> Click `"Start Journey"`.
-   - Progress: Click `"Simulate Next Stop"` until `"Hazratganj"` is reached.
+### Test 1: Destination Search
+1. Open the Travel & Journey interface.
+2. Enter a destination.
+3. Submit the search.
+4. Review the available demonstration routes.
 
-2. **Wrong Bus Detection**:
-   - Select Route 101 to Hazratganj.
-   - Click `"⚠ Bus 204 Board"` preset (Gomti Nagar bus).
-   - Observe WRONG_BUS warning: journey is prevented from starting.
+### Test 2: Trip Planning
+1. Open the trip planner.
+2. Select a starting point and destination.
+3. Choose a budget.
+4. Select a travel preference.
+5. Generate the available trip options.
+6. Review the estimated fare and duration.
 
-3. **OCR Failure & Manual Fallback**:
-   - Click `"✕ Blurry Board"` preset.
-   - Observe failure message and click `"Having trouble scanning? Enter bus number manually"` to enter the number shown on the board.
+### Test 3: Mapping
+1. Open a route visualization.
+2. Choose the option to use your location.
+3. Allow browser location access.
+4. Review the map and displayed route alternatives.
 
-4. **Emergency SOS**:
-   - Click `"SOS"` (or press `Alt+S`).
-   - Select a service, review the confirmation, then click `"Confirm SOS"`. This records a demo request only. The `Call` link is a separate, user-initiated phone action; use `"Sound local alarm"` only when you want the device to make an audible alert.
+### Test 4: Bus Board OCR
+1. Open **Bus Board OCR**.
+2. Start the camera or upload a bus-board photograph.
+3. Capture or submit the image.
+4. Review the extracted text and OCR confidence.
+5. Check the verification result against the demonstration bus database.
 
-5. **Demo bus lookup**:
-   - Navigate to Bus Board OCR, enter one of `BUS-101`, `BUS-102`, `BUS-204`, `BUS-305`, or `BUS-502`, and select `"Find demo bus"`.
-   - Check the sample route/location card and map. An unknown or invalid number displays an accessible retry message. All shown positions and ETAs are simulated.
+### Test 5: Voice Assistance
+1. Enable the required browser permissions.
+2. Select a supported language.
+3. Try the voice input or read-aloud controls.
+4. Check whether speech output and recognition use the intended language.
+
+### Test 6: Emergency Assistance
+1. Open the SOS interface.
+2. Select an emergency service.
+3. Verify the displayed contact information.
+4. Check the phone-call action without placing an unintended emergency call.
+
+### Test 7: Journey Guidance
+1. Select a demonstration route.
+2. Start the journey interface.
+3. Review the current stop and next stop.
+4. Test manual or timed stop advancement.
+5. Confirm that spoken announcements match the displayed stop information.
+
+---
+
+## 🔐 Privacy & Safety
+
+Drishti AI is intended to support accessible travel, but it must not create a false sense of security.
+
+- Location access should occur only after user permission.
+- Camera and microphone access should be requested only when needed.
+- Location, camera images, and other sensitive information should not be collected or transmitted unnecessarily.
+- OCR confidence should not be interpreted as proof of bus identity.
+- Demonstration routes and fares should not be presented as verified live information.
+- Route visualization should not be described as a guarantee of pedestrian safety or accessibility.
+- Emergency functionality should clearly communicate whether a call has actually been initiated.
+
+---
+
+## 🚀 Future Improvements
+
+Potential improvements include:
+
+- Integration with verified live public-transit data.
+- More robust multilingual speech recognition and spoken guidance.
+- Improved bus identification and destination matching.
+- GPS-based stop tracking and arrival notifications.
+- Verified walking and public-transit directions.
+- Accessibility-aware routing using reliable sidewalk and infrastructure data.
+- Better offline support for essential journey information.
+- Improved emergency contact workflows.
+- More comprehensive testing with visually impaired commuters.
+- Stronger privacy controls and secure handling of sensitive information.
+
+These are proposed improvements, not claims that the capabilities are already implemented.
+
+---
+
+## 🎯 Project Objective
+
+Drishti AI aims to make public transportation more accessible by combining voice assistance, bus-board OCR, route visualization, budget-aware trip planning, and emergency contact access in one interface.
+
+By bringing these features together, the project explores how accessible software can help visually impaired and low-vision commuters obtain journey information with greater independence.
+
+---
+
+## 👥 Team & Contributors
+
+Add your verified team details here.
+
+- **Project:** Drishti AI
+- **Domain:** Accessibility / Assistive Technology / Smart Mobility
+- **Institution:** Dr. Shakuntala Misra National Rehabilitation University
+- **Team Name:** TEAM CONTINENTAL
+- **Team Members:** RITIK PATHAK
+                 ** MOHAMMAD REHAN 
+                 ** AKHAND PRATAP SINGH
+                 ** YASH SRIVASTAVA
+---
+
+## 📄 Disclaimer
+
+Drishti AI is a prototype intended for demonstration and development purposes. Route information, fares, OCR results, and journey guidance may rely on predefined or demonstration data. The application does not guarantee real-time transit accuracy, route safety, accessibility, or emergency response.
+
+Users should independently verify important travel and emergency information.
+
+---
+
+## 📜 License
+
+Choose and add an appropriate open-source license before distributing the project publicly.
