@@ -42,7 +42,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
                 Automated Verification Suite
               </h2>
               <p className="text-xs text-slate-500">
-                Tests all 8 core transit and safety verification scenarios
+                Tests all 9 core transit and safety verification scenarios
               </p>
             </div>
           </div>

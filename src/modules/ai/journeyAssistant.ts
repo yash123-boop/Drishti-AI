@@ -2,6 +2,30 @@ import { DEMO_BUSES, normalizeDemoBusNumber } from '../routes/demoBusData';
 import { DEMO_PLACES, findDemoPlace, getEstimatedPlaceBudget } from '../places/demoPlaces';
 import { findJourneyOptions, getSupportedJourneyDestinations } from '../routes/journeyPlanner';
 import { DEMO_ROUTES } from '../routes/routeData';
+import { getVoiceMessage } from '../voice/voiceMessages';
+import type { JourneyState, RouteMatchResult, TransitRoute } from '../../types/transit';
+
+export type JourneyAssistantStage =
+  | 'IDLE'
+  | 'DESTINATION_SELECTED'
+  | 'ROUTE_SELECTED'
+  | 'AT_BUS_STOP'
+  | 'SCANNING_BUS'
+  | 'BUS_VERIFICATION'
+  | 'JOURNEY_STARTED'
+  | 'APPROACHING_STOP'
+  | 'DESTINATION_REACHED'
+  | 'EMERGENCY';
+
+export interface JourneyAssistantContext {
+  stage: JourneyAssistantStage;
+  destination?: string;
+  route?: TransitRoute | null;
+  journeyState?: JourneyState;
+  detectedBusNumber?: string | null;
+  matchingRouteCount?: number;
+  verificationStatus?: RouteMatchResult['status'];
+}
 
 const money = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
@@ -21,9 +45,91 @@ function findKnownOrigin(text: string) {
     .sort((a, b) => b.length - a.length)[0];
 }
 
-export function answerJourneyQuestion(question: string): string {
+export function getJourneyStateResponse(context: JourneyAssistantContext, language = 'en-IN'): string {
+  const route = context.route ?? context.journeyState?.route;
+  const destination = context.destination || route?.destination || context.journeyState?.route?.destination || '';
+  const bus = context.detectedBusNumber || route?.busNumber || context.journeyState?.confirmedBusNumber || '';
+
+  switch (context.stage) {
+    case 'DESTINATION_SELECTED':
+      return context.matchingRouteCount
+        ? getVoiceMessage(language, 'routesFound', { count: context.matchingRouteCount, destination })
+        : getVoiceMessage(language, 'noRoutes', { destination });
+    case 'ROUTE_SELECTED':
+      return route
+        ? getVoiceMessage(language, 'routeSummary', {
+            bus: route.busNumber,
+            route: route.routeName,
+            origin: route.origin,
+            destination: route.destination,
+            stops: route.stops.length,
+            frequency: route.frequencyMinutes,
+          })
+        : getVoiceMessage(language, 'welcome');
+    case 'AT_BUS_STOP':
+      return getVoiceMessage(language, 'assistantAtBusStop', {
+        stop: route?.origin ?? destination,
+      });
+    case 'SCANNING_BUS':
+      return getVoiceMessage(language, 'assistantScanningBus');
+    case 'BUS_VERIFICATION':
+      if (context.verificationStatus === 'MATCH') {
+        return getVoiceMessage(language, 'busMatched', {
+          bus: bus || route?.busNumber || '',
+          route: route?.routeName ?? '',
+        });
+      }
+      if (context.verificationStatus === 'WRONG_BUS') {
+        return getVoiceMessage(language, 'wrongBus', {
+          scanned: bus || 'unknown',
+          expected: route?.busNumber ?? '',
+        });
+      }
+      if (context.verificationStatus === 'UNRECOGNIZED') {
+        return getVoiceMessage(language, 'invalidBus');
+      }
+      return getVoiceMessage(language, 'assistantVerifyingBus', {
+        bus: bus || 'unknown',
+        destination,
+      });
+    case 'JOURNEY_STARTED': {
+      const state = context.journeyState;
+      if (state?.status === 'PAUSED') return getVoiceMessage(language, 'journeyPaused');
+      const current = state?.currentStop?.name ?? route?.origin ?? '';
+      const next = state?.nextStop?.name ?? null;
+      return next
+        ? getVoiceMessage(language, 'stopProgressNext', { current, next })
+        : getVoiceMessage(language, 'journeyStarted', { origin: current, destination });
+    }
+    case 'APPROACHING_STOP':
+      return getVoiceMessage(language, 'approaching', { destination });
+    case 'DESTINATION_REACHED':
+      return getVoiceMessage(language, 'destinationReached', { destination });
+    case 'EMERGENCY':
+      return getVoiceMessage(language, 'assistantEmergency');
+    case 'IDLE':
+    default:
+      return getVoiceMessage(language, 'welcome');
+  }
+}
+
+export function answerJourneyQuestion(
+  question: string,
+  context?: JourneyAssistantContext,
+  language = 'en-IN'
+): string {
   const text = question.trim();
   if (!text) return 'Type or speak a journey question. I can only answer from the available demo bus routes, fares, and place records.';
+
+  const asksForCurrentState = /\b(what should i do|what can i do|what now|what next|next step|journey status|where am i|where am i now)\b/i.test(text);
+  if (context && asksForCurrentState) return getJourneyStateResponse(context, language);
+
+  if (
+    context?.stage === 'BUS_VERIFICATION' &&
+    /\b(which bus|my bus|selected route|right bus|correct bus|does this bus)\b/i.test(text)
+  ) {
+    return getJourneyStateResponse(context, language);
+  }
 
   const busMatch = text.match(/\bBUS[-\s]?(\d{3})\b/i) ??
     (/^\s*(\d{3})\s*$/.exec(text) ? [text, text.trim()] : null);

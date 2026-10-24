@@ -10,7 +10,7 @@ import { parseBusNumberFromOCR } from '../ocr/textParser';
 import { evaluateStopProgress } from '../journey/stopManager';
 import { analyzeDemoBusBoard } from '../ai/busDetection';
 import { findJourneyOptions, findNearestDemoStop } from '../routes/journeyPlanner';
-import { answerJourneyQuestion } from '../ai/journeyAssistant';
+import { answerJourneyQuestion, getJourneyStateResponse, type JourneyAssistantContext } from '../ai/journeyAssistant';
 import type { OCRResult } from '../../types/transit';
 import type { TestScenarioResult } from '../../types/transit';
 
@@ -223,6 +223,62 @@ export function runValidationSuite(): TestScenarioResult[] {
     results.push({
       id: 'test-8-journey-planning',
       name: 'Trip Planner: Demo Route Costs and Grounded Responses',
+      passed: false,
+      details: `Error: ${err.message}`,
+    });
+  }
+
+  // Test 9: Context-aware assistant follows the active journey stage
+  try {
+    const route = DEMO_ROUTES.find((candidate) => candidate.id === 'route-101')!;
+    const contexts: JourneyAssistantContext[] = [
+      { stage: 'IDLE' },
+      { stage: 'DESTINATION_SELECTED', destination: route.destination, matchingRouteCount: 2 },
+      { stage: 'ROUTE_SELECTED', route },
+      { stage: 'AT_BUS_STOP', route },
+      { stage: 'SCANNING_BUS', route },
+      { stage: 'BUS_VERIFICATION', route, detectedBusNumber: '101' },
+      { stage: 'JOURNEY_STARTED', route },
+      { stage: 'APPROACHING_STOP', route },
+      { stage: 'DESTINATION_REACHED', route },
+      { stage: 'EMERGENCY', route },
+    ];
+    const responses = contexts.map((context) => getJourneyStateResponse(context));
+    const scanningContext = contexts.find((context) => context.stage === 'SCANNING_BUS')!;
+    const nextStep = answerJourneyQuestion('What should I do now?', scanningContext);
+    const hindiResponse = getJourneyStateResponse(contexts[3], 'hi-IN');
+    const verifiedResponse = getJourneyStateResponse({
+      stage: 'BUS_VERIFICATION',
+      route,
+      detectedBusNumber: '101',
+      verificationStatus: 'MATCH',
+    });
+    const wrongBusResponse = getJourneyStateResponse({
+      stage: 'BUS_VERIFICATION',
+      route,
+      detectedBusNumber: '204',
+      verificationStatus: 'WRONG_BUS',
+    });
+    const passed =
+      new Set(responses).size === contexts.length &&
+      nextStep === getJourneyStateResponse(scanningContext) &&
+      responses[3].includes(route.origin) &&
+      responses[5].includes('101') &&
+      verifiedResponse.includes('verified') &&
+      /do not board/i.test(wrongBusResponse) &&
+      hindiResponse.includes('स्कैन');
+    results.push({
+      id: 'test-9-context-aware-assistant',
+      name: 'Voice Assistant: Journey-State-Aware Guidance',
+      passed,
+      details: passed
+        ? 'Assistant guidance changes across all 10 journey stages, including match/mismatch results; Hindi status text is available.'
+        : 'The assistant did not return distinct, localized guidance for each journey state.',
+    });
+  } catch (err: any) {
+    results.push({
+      id: 'test-9-context-aware-assistant',
+      name: 'Voice Assistant: Journey-State-Aware Guidance',
       passed: false,
       details: `Error: ${err.message}`,
     });

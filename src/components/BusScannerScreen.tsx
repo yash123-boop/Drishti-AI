@@ -24,6 +24,8 @@ interface BusScannerScreenProps {
   onManualEntry: (busNumber: string) => void;
   onBack: () => void;
   language: string;
+  onScanStateChange: (isScanning: boolean) => void;
+  onBusVerificationChange: (busNumber: string | null) => void;
 }
 
 export const BusScannerScreen: React.FC<BusScannerScreenProps> = ({
@@ -32,6 +34,8 @@ export const BusScannerScreen: React.FC<BusScannerScreenProps> = ({
   onManualEntry,
   onBack,
   language,
+  onScanStateChange,
+  onBusVerificationChange,
 }) => {
   const t = getMessages(language);
   const [cameraActive, setCameraActive] = useState(false);
@@ -57,6 +61,15 @@ export const BusScannerScreen: React.FC<BusScannerScreenProps> = ({
       busOCR.stopCamera();
     };
   }, []);
+
+  useEffect(() => {
+    onScanStateChange(isProcessing);
+  }, [isProcessing, onScanStateChange]);
+
+  useEffect(() => () => {
+    onScanStateChange(false);
+    onBusVerificationChange(null);
+  }, [onBusVerificationChange, onScanStateChange]);
 
   useEffect(() => {
     if (showManualEntry) manualBusInputRef.current?.focus();
@@ -185,6 +198,7 @@ export const BusScannerScreen: React.FC<BusScannerScreenProps> = ({
       };
       setOcrResult(resultWithConfidence);
       setAIDetection(detection);
+      onBusVerificationChange(detection.verification === 'verified' ? detection.busNumber : null);
       if (detection.verification === 'not-detected') {
         setScanError(t.ocrFailure);
         speechSynth.speak(detection.verificationMessage);
@@ -217,6 +231,7 @@ export const BusScannerScreen: React.FC<BusScannerScreenProps> = ({
     setPreviewImage(null);
     setOcrResult(null);
     setAIDetection(null);
+    onBusVerificationChange(null);
     setGuidanceResult(null);
     setProgressPercent(0);
     setProgressStatus('');

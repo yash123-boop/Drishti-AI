@@ -7,7 +7,6 @@ import { hapticEngine } from '../modules/voice/hapticEngine';
 import { LiveLocationMap } from './LiveLocationMap';
 import { LucknowPlaces } from './LucknowPlaces';
 import { TripPlanner } from './TripPlanner';
-import { JourneyAssistant } from './JourneyAssistant';
 const translations: Record<string, Record<string, string>> = {
   'en-IN': {
     title: 'Where would you like to travel?',
@@ -176,6 +175,7 @@ interface DestinationScreenProps {
   onOpenEmergency: () => void;
   onScanBus: () => void;
   onStartJourney: (route: import('../types/transit').TransitRoute) => void;
+  onAskJourneyAssistant: (question: string) => void;
 }
 
 export const DestinationScreen: React.FC<DestinationScreenProps> = ({
@@ -184,6 +184,7 @@ export const DestinationScreen: React.FC<DestinationScreenProps> = ({
   onOpenEmergency,
   onScanBus,
   onStartJourney,
+  onAskJourneyAssistant,
 }) => {
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -191,7 +192,6 @@ export const DestinationScreen: React.FC<DestinationScreenProps> = ({
   const [voiceError, setVoiceError] = useState<string | null>(null);
 const t = translations[language] ?? translations['en-IN'];
   const [plannedDestination, setPlannedDestination] = useState('');
-  const [assistantQuestion, setAssistantQuestion] = useState('');
   const handleStartVoice = () => {
     audioChimes.play('tap');
     hapticEngine.tap();
@@ -356,7 +356,7 @@ const t = translations[language] ?? translations['en-IN'];
           requestAnimationFrame(() => document.getElementById('trip-planner')?.scrollIntoView({ behavior: 'smooth' }));
         }}
         onAskAI={(question) => {
-          setAssistantQuestion(question);
+          onAskJourneyAssistant(question);
           requestAnimationFrame(() => document.getElementById('journey-assistant')?.scrollIntoView({ behavior: 'smooth' }));
         }}
       />
@@ -365,11 +365,6 @@ const t = translations[language] ?? translations['en-IN'];
           initialDestination={plannedDestination}
           onInitialDestinationHandled={() => setPlannedDestination('')}
           onStartJourney={onStartJourney}
-        />
-        <JourneyAssistant
-          initialQuestion={assistantQuestion}
-          onInitialQuestionHandled={() => setAssistantQuestion('')}
-          language={language}
         />
       </div>
 

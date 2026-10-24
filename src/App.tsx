@@ -21,8 +21,11 @@ import { JourneyGuidanceScreen } from './components/JourneyGuidanceScreen';
 import { EmergencyModal } from './components/EmergencyModal';
 import { ValidationModal } from './components/ValidationModal';
 import { LanguageSelectionScreen } from './components/LanguageSelectionScreen';
+import { JourneyAssistant } from './components/JourneyAssistant';
 
 import { searchRoutesByDestination } from './modules/routes/routeSelector';
+import { matchBusToRoute } from './modules/routes/routeMatcher';
+import type { JourneyAssistantContext } from './modules/ai/journeyAssistant';
 import { journeyEngine } from './modules/journey/journeyEngine';
 import { speechSynth } from './modules/voice/speechSynthesis';
 import { speechRecognition } from './modules/voice/speechRecognition';
@@ -76,6 +79,9 @@ export default function App() {
   const [selectedRoute, setSelectedRoute] = useState<TransitRoute | null>(null);
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
   const [journeyState, setJourneyState] = useState<JourneyState>(journeyEngine.getState());
+  const [isScanningBus, setIsScanningBus] = useState(false);
+  const [scannedBusNumber, setScannedBusNumber] = useState<string | null>(null);
+  const [assistantQuestion, setAssistantQuestion] = useState('');
 // Selected app language
 const [selectedLanguage, setSelectedLanguage] = useState<VoiceLanguage>(getSavedLanguage);
 const [showLanguageSelection, setShowLanguageSelection] = useState(true);
@@ -246,6 +252,8 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
 
   const handleSelectRoute = (route: TransitRoute) => {
     setSelectedRoute(route);
+    setIsScanningBus(false);
+    setScannedBusNumber(null);
     setCurrentView('scanner');
   };
 
@@ -255,11 +263,13 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
 
   const handleOCRComplete = (result: OCRResult) => {
     setOcrResult(result);
+    setIsScanningBus(false);
     setCurrentView('confirmation');
   };
 
   const handleManualEntryFallback = (busNumber: string) => {
     if (!selectedRoute) return;
+    setScannedBusNumber(busNumber.trim().toUpperCase().replace(/^BUS[-\s]?/, ''));
     setOcrResult({
       rawText: busNumber,
       candidateNumber: busNumber.trim().toUpperCase().replace(/^BUS[-\s]?/, ''),
@@ -267,11 +277,13 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
       isReliable: false,
       source: 'manual',
     });
+    setIsScanningBus(false);
     setCurrentView('confirmation');
   };
 
   const handleConfirmMatchAndStart = (confirmedNumber: string) => {
     if (!selectedRoute) return;
+    setScannedBusNumber(null);
     journeyEngine.startJourney(selectedRoute, confirmedNumber);
     setCurrentView('journey');
   };
@@ -280,8 +292,49 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
     journeyEngine.resetJourney();
     setSelectedRoute(null);
     setOcrResult(null);
+    setScannedBusNumber(null);
+    setDestinationQuery('');
+    setMatchingRoutes([]);
     setCurrentView('destination');
   };
+
+  const journeyAssistantContext: JourneyAssistantContext = (() => {
+    if (isEmergencyOpen) return { stage: 'EMERGENCY', destination: destinationQuery, route: selectedRoute };
+
+    if (currentView === 'routes') {
+      return {
+        stage: 'DESTINATION_SELECTED',
+        destination: destinationQuery,
+        matchingRouteCount: matchingRoutes.length,
+      };
+    }
+    if (currentView === 'scanner' && selectedRoute) {
+      return {
+        stage: scannedBusNumber ? 'BUS_VERIFICATION' : isScanningBus ? 'SCANNING_BUS' : 'AT_BUS_STOP',
+        destination: selectedRoute.destination,
+        route: selectedRoute,
+        detectedBusNumber: scannedBusNumber,
+      };
+    }
+    if (currentView === 'confirmation' && selectedRoute) {
+      return {
+        stage: 'BUS_VERIFICATION',
+        destination: selectedRoute.destination,
+        route: selectedRoute,
+        detectedBusNumber: ocrResult?.candidateNumber,
+        verificationStatus: matchBusToRoute(ocrResult?.candidateNumber ?? '', selectedRoute).status,
+      };
+    }
+    if (currentView === 'journey' && journeyState.route) {
+      const stage = journeyState.status === 'ARRIVED'
+        ? 'DESTINATION_REACHED'
+        : journeyState.status === 'APPROACHING'
+          ? 'APPROACHING_STOP'
+          : 'JOURNEY_STARTED';
+      return { stage, destination: journeyState.route.destination, route: journeyState.route, journeyState };
+    }
+    return { stage: 'IDLE' };
+  })();
 
   // Compute text-size wrapper class
   const textSizeClass =
@@ -386,6 +439,7 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
             onOpenEmergency={() => setIsEmergencyOpen(true)}
             onScanBus={handleOpenBusScanner}
             onStartJourney={handleSelectRoute}
+            onAskJourneyAssistant={setAssistantQuestion}
           />
         )}
 
@@ -406,6 +460,8 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
             onManualEntry={handleManualEntryFallback}
             onBack={() => setCurrentView('routes')}
             language={selectedLanguage}
+            onScanStateChange={setIsScanningBus}
+            onBusVerificationChange={setScannedBusNumber}
           />
         )}
 
@@ -414,7 +470,10 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
             selectedRoute={selectedRoute}
             ocrResult={ocrResult}
             onConfirmMatch={handleConfirmMatchAndStart}
-            onRescan={() => setCurrentView('scanner')}
+            onRescan={() => {
+              setScannedBusNumber(null);
+              setCurrentView('scanner');
+            }}
             onCancel={() => setCurrentView('routes')}
           />
         )}
@@ -435,6 +494,15 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
           />
         )}
       </main>
+
+      <div className="w-full max-w-5xl mx-auto px-4 pb-8">
+        <JourneyAssistant
+          initialQuestion={assistantQuestion}
+          onInitialQuestionHandled={() => setAssistantQuestion('')}
+          language={selectedLanguage}
+          context={journeyAssistantContext}
+        />
+      </div>
 
       {/* Tactile Radar Feedback Monitor (Visual Haptic Indicator) */}
       <TactileRadar />

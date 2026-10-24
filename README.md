@@ -49,7 +49,8 @@ Drishti AI solves the critical everyday challenges faced by visually impaired pa
 5. **Trip Planner & Journey Assistant**:
    - Compare route-backed trips by estimated INR budget, one-way travel time, cheapest/fastest/balanced preference, and the demo bus type's accessibility description. Set a preset/custom budget and optional travel date; use current location to select a nearby geocoded demo stop (within 1 km), then receive an estimated one-way/return fare and a sample day itinerary.
    - Budget breakdowns include round-trip bus fare, food, entry, local transport, and miscellaneous estimates. Values and itinerary timings are illustrative, not verified venue prices, live schedules, or guaranteed accessible service.
-   - Ask typed or spoken questions about available routes, supported stops, demo buses, fares, frequency, travel time, and place expenses; listen to answers with speech synthesis. Answers use local app data and state when a route is missing—there is no generative AI, live bus feed, or live fare lookup.
+   - Ask typed or spoken questions about available routes, supported stops, demo buses, fares, frequency, travel time, and place expenses; listen to answers with speech synthesis. The assistant remains available across app screens and changes its guidance for destination selection, boarding, scanning, verification, journey progress, arrival, and emergency states.
+   - Assistant journey status is derived from the app's selected route and journey simulator, not a live bus/GPS feed. Answers use local app data and state when a route is missing—there is no generative AI or live fare lookup. Text answers remain available if speech output is unavailable; users can type if speech recognition is unsupported.
 
 6. **Emergency SOS Safety Assistance**:
    - Select a service (Police, Ambulance, Fire, Medical, or General Help), review a confirmation step, and explicitly confirm a demo SOS.
@@ -64,7 +65,7 @@ Drishti AI solves the critical everyday challenges faced by visually impaired pa
    - Global keyboard shortcuts (`Alt+V`, `Alt+S`, `Alt+N`, `Alt+H`, `Alt+R`, `Space`).
 
 8. **Automated Verification Suite**:
-   - In-app test runner executing all 8 transit and safety verification scenarios with a single click, including confidence-gated bus detection and route-backed trip-cost checks.
+   - In-app test runner executing all 9 transit and safety verification scenarios with a single click, including confidence-gated bus detection, route-backed trip-cost checks, and journey-state-aware assistant responses.
 
 ---
 

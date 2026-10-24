@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bot, Mic, MicOff, Send, Trash2, Volume2 } from 'lucide-react';
-import { answerJourneyQuestion } from '../modules/ai/journeyAssistant';
+import { answerJourneyQuestion, getJourneyStateResponse, type JourneyAssistantContext } from '../modules/ai/journeyAssistant';
 import { speechRecognition } from '../modules/voice/speechRecognition';
 import { speechSynth } from '../modules/voice/speechSynthesis';
 
@@ -8,6 +8,7 @@ interface JourneyAssistantProps {
   initialQuestion?: string;
   onInitialQuestionHandled?: () => void;
   language?: string;
+  context: JourneyAssistantContext;
 }
 
 interface ChatMessage {
@@ -24,7 +25,12 @@ const suggestions = [
   'What is the next bus to the airport?',
 ];
 
-export function JourneyAssistant({ initialQuestion = '', onInitialQuestionHandled, language = 'en-IN' }: JourneyAssistantProps) {
+export function JourneyAssistant({
+  initialQuestion = '',
+  onInitialQuestionHandled,
+  language = 'en-IN',
+  context,
+}: JourneyAssistantProps) {
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +41,7 @@ export function JourneyAssistant({ initialQuestion = '', onInitialQuestionHandle
   }]);
   const messageCounter = useRef(1);
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const contextResponse = getJourneyStateResponse(context, language);
 
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -53,7 +60,7 @@ export function JourneyAssistant({ initialQuestion = '', onInitialQuestionHandle
   const sendQuestion = (question: string) => {
     const trimmed = question.trim();
     if (!trimmed) return;
-    const answer = answerJourneyQuestion(trimmed);
+    const answer = answerJourneyQuestion(trimmed, context, language);
     setMessages((current) => [
       ...current,
       { id: messageCounter.current++, role: 'user', text: trimmed },
@@ -107,6 +114,22 @@ export function JourneyAssistant({ initialQuestion = '', onInitialQuestionHandle
           <Trash2 size={17} aria-hidden="true" /> Clear conversation
         </button>
       </div>
+
+      <div aria-live="polite" aria-atomic="true" className="rounded-xl border-2 border-slate-300 bg-slate-100 p-4 dark:border-slate-600 dark:bg-slate-900">
+        <p className="font-extrabold">Journey status</p>
+        <p className="mt-1">{contextResponse}</p>
+        <button
+          type="button"
+          onClick={() => sendQuestion('What should I do now?')}
+          className="mt-3 min-h-11 rounded-lg border-2 border-violet-700 px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-300"
+        >
+          What should I do next?
+        </button>
+      </div>
+
+      <p className="text-sm text-slate-700 dark:text-slate-200">
+        Answers stay visible if speech output is unavailable. If speech recognition is unsupported, type your question instead.
+      </p>
 
       <div role="log" aria-label="Journey assistant conversation" aria-live="polite" aria-relevant="additions" className="max-h-80 space-y-3 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-900">
         {messages.map((message) => (
