@@ -525,7 +525,7 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div className="space-y-1">
             <p className="font-bold text-slate-800 dark:text-slate-200">
-              Drishti AI — Complete Working Prototype for Visually Impaired Commuters
+              Margdarshak AI — Complete Working Prototype for Visually Impaired Commuters
             </p>
             <p className="text-[11px] text-slate-500">
               Keyboard Shortcuts: <kbd className="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Alt+V</kbd> Voice • <kbd className="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Alt+S</kbd> SOS • <kbd className="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Alt+N</kbd> Next Stop • <kbd className="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Alt+H</kbd> High Contrast

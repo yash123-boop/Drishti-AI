@@ -157,7 +157,7 @@ export const JourneyGuidanceScreen: React.FC<JourneyGuidanceScreenProps> = ({
             Destination Reached!
           </h2>
           <p className="text-base sm:text-lg max-w-lg mx-auto opacity-95">
-            You have safely arrived at <strong>{route.destination}</strong>. Thank you for traveling with Drishti AI.
+            You have safely arrived at <strong>{route.destination}</strong>. Thank you for traveling with Margdarshak AI.
           </p>
           <div className="pt-2">
             <button

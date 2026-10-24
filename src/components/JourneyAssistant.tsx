@@ -37,7 +37,7 @@ export function JourneyAssistant({
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: 0,
     role: 'assistant',
-    text: 'I can answer from Drishti AI’s demo routes, bus records and place budget estimates. Route and fare details are limited to the available data.',
+    text: 'I can answer from Margdarshak AI’s demo routes, bus records and place budget estimates. Route and fare details are limited to the available data.',
   }]);
   const messageCounter = useRef(1);
   const lastMessageRef = useRef<HTMLDivElement>(null);

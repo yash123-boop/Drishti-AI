@@ -6,7 +6,7 @@ export type VoiceLanguage = (typeof VOICE_LANGUAGES)[number];
 
 export const voiceMessages = {
   'en-IN': {
-    welcome: 'Welcome to Drishti AI, your accessible travel companion. Say your destination or type it below.',
+    welcome: 'Welcome to Margdarshak AI, your accessible travel companion. Say your destination or type it below.',
     destinationRecognized: 'Destination understood: {destination}. Searching for accessible transit routes.',
     routesFound: 'Found {count} demonstration routes to {destination}. Please select your preferred route.',
     noRoutes: 'No demonstration routes found for {destination}. Try searching for Hazratganj.',

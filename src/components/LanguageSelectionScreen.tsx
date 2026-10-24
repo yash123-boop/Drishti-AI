@@ -13,7 +13,7 @@ const languages: Record<VoiceLanguage, {
   'en-IN': {
     name: 'English',
     title: 'Choose your language',
-    instruction: 'Select a language to hear a welcome and use Drishti AI in that language.',
+    instruction: 'Select a language to hear a welcome and use Margdarshak AI in that language.',
     hint: 'Selecting a language speaks the welcome message and opens the website.',
     voiceWarning: 'No local {language} voice is installed and cloud speech is not configured on the server.',
     checkingVoice: 'Checking speech service...',
@@ -110,15 +110,20 @@ export const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = (
   return (
     <main
       lang={selectedLanguage}
-      className="flex min-h-screen w-full items-center justify-center bg-slate-50 px-4 py-10 text-slate-900 dark:bg-slate-950 dark:text-white"
+      className="flex min-h-screen w-full items-center justify-center bg-[#05070B] px-4 py-10 text-white"
     >
-      <section className="w-full max-w-3xl space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900 sm:p-10">
-        <header className="space-y-3 text-center">
-          <p className="text-sm font-bold uppercase tracking-widest text-violet-700 dark:text-violet-300">
-            Drishti AI
-          </p>
-          <h1 className="text-3xl font-extrabold sm:text-4xl">{copy.title}</h1>
-          <p className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300">
+      <section className="w-full max-w-4xl space-y-6 rounded-[28px] border border-slate-700 bg-[#05070B] p-6 shadow-2xl shadow-black/40 sm:p-8">
+        <header className="space-y-4 text-center">
+          <div className="flex justify-center items-end gap-1 leading-none">
+            <span className="text-4xl font-black tracking-[-0.07em] text-white sm:text-6xl">
+              Margdarshak
+            </span>
+            <span className="text-4xl font-black tracking-[-0.07em] text-[#D7F9B2] sm:text-6xl">
+              AI
+            </span>
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{copy.title}</h1>
+          <p className="mx-auto max-w-2xl text-base text-slate-300">
             {copy.instruction}
           </p>
         </header>
@@ -135,10 +140,10 @@ export const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = (
                 lang={language}
                 aria-pressed={isSelected}
                 onClick={() => onSelectLanguage(language)}
-                className={`flex min-h-16 items-center justify-between rounded-xl border-2 px-5 py-4 text-left text-lg font-semibold transition-colors focus-visible:outline focus-visible:outline-4 focus-visible:outline-violet-500 ${
+                className={`flex min-h-16 items-center justify-between rounded-xl border-2 px-5 py-4 text-left text-lg font-semibold transition-colors focus-visible:outline focus-visible:outline-4 focus-visible:outline-[#D7F9B2] ${
                   isSelected
-                    ? 'border-violet-600 bg-violet-50 text-violet-950 dark:bg-violet-950 dark:text-violet-100'
-                    : 'border-slate-200 hover:border-violet-400 dark:border-slate-700 dark:hover:border-violet-500'
+                    ? 'border-[#D7F9B2] bg-[#0D1117] text-white'
+                    : 'border-slate-700 bg-[#0B0F14] text-slate-100 hover:border-[#D7F9B2]/80 hover:bg-[#111827]'
                 }`}
               >
                 <span>{option.name}</span>
@@ -151,17 +156,17 @@ export const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = (
         </div>
 
         {hasVoice === false && cloudTtsConfigured === null ? (
-          <p role="status" className="text-center text-sm text-slate-500">
+          <p role="status" className="text-center text-sm text-slate-400">
             {copy.checkingVoice}
           </p>
         ) : hasVoice === false && cloudTtsConfigured === false ? (
-          <p role="status" className="text-center text-sm text-amber-700 dark:text-amber-300">
+          <p role="status" className="text-center text-sm text-amber-300">
             {copy.voiceWarning.replace('{language}', copy.name)}
           </p>
         ) : null}
 
-        <p className="flex items-center justify-center gap-2 text-center text-sm text-slate-500 dark:text-slate-400">
-          <Volume2 size={18} aria-hidden="true" />
+        <p className="flex items-center justify-center gap-2 text-center text-sm text-slate-300">
+          <Volume2 size={18} aria-hidden="true" className="text-[#D7F9B2]" />
           {copy.hint}
         </p>
       </section>

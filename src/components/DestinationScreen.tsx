@@ -247,14 +247,14 @@ const t = translations[language] ?? translations['en-IN'];
           <Navigation className="w-3.5 h-3.5" />
           {t.badge}
         </div>
-       <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white">
-  {t.title}
-</h1>
+        <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white">
+          {t.title}
+        </h1>
 
-<p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-  {t.instruction}
-</p>
-</div>
+        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          {t.instruction}
+        </p>
+      </div>
   
 
 <LiveLocationMap />

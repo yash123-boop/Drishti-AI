@@ -134,5 +134,5 @@ if (production) {
 }
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Drishti AI server listening on http://localhost:${port}`);
+  console.log(`Margdarshak AI server listening on http://localhost:${port}`);
 });

@@ -79,18 +79,15 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => onNavigate('home')}
-              className="flex items-center gap-2.5 text-left rounded-xl p-1.5 focus-visible:ring-4 focus-visible:ring-blue-600"
-              aria-label="Drishti AI - Go to Home Navigation"
+              className="flex items-center rounded-xl p-1.5 focus-visible:ring-4 focus-visible:ring-blue-600"
+              aria-label="Margdarshak AI - Go to Home Navigation"
             >
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                <Volume2 className="w-6 h-6 animate-pulse" />
-              </div>
-              <div>
-                <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white block leading-none">
-                  Drishti AI
+              <div className="flex items-baseline gap-1 text-left leading-none">
+                <span className="text-xl sm:text-2xl font-black tracking-[-0.06em] text-slate-900 dark:text-white">
+                  Margdarshak
                 </span>
-                <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 block mt-1 tracking-wider uppercase">
-                  Accessible Transit
+                <span className="text-xl sm:text-2xl font-black tracking-[-0.06em] text-violet-600 dark:text-violet-400">
+                  AI
                 </span>
               </div>
             </button>
