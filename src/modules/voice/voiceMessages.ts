@@ -6,7 +6,7 @@ export type VoiceLanguage = (typeof VOICE_LANGUAGES)[number];
 
 export const voiceMessages = {
   'en-IN': {
-    welcome: 'Welcome to Margdarshak AI, your accessible travel companion. Say your destination or type it below.',
+    welcome: 'English selected. Welcome to Margdarshak AI, your accessible travel companion. I can help plan a trip using demo bus routes, estimate fares and travel times, and guide you through bus verification and your journey. This is sample route information, not live transit data. Tell me where you want to go, or type your destination.',
     destinationRecognized: 'Destination understood: {destination}. Searching for accessible transit routes.',
     routesFound: 'Found {count} demonstration routes to {destination}. Please select your preferred route.',
     noRoutes: 'No demonstration routes found for {destination}. Try searching for Hazratganj.',
@@ -52,7 +52,7 @@ export const voiceMessages = {
     micNoSpeech: 'No speech was detected. Please try speaking again.',
     micNetwork: 'A network issue interrupted speech recognition. Please try again or type your destination.',
     micError: 'A speech recognition error occurred. Please try again or type your destination.',
-    ttsUnavailable: 'Cloud speech could not play. Check the server TTS key, network connection, and browser audio permissions.',
+    ttsUnavailable: 'Speech could not play. Check your device speech voices and browser audio permissions.',
     offlineCacheStarting: 'Starting offline map downloads for route {route}.',
     offlineCacheDone: 'Offline maps for route {route} are ready. Navigation is available offline.',
     offlineEnabled: 'Offline mode enabled. Cached maps are now in use.',
@@ -61,7 +61,7 @@ export const voiceMessages = {
     offlineSchedulesSynced: 'Offline transit schedules updated.',
   },
   'hi-IN': {
-    welcome: 'दृष्टि एआई में आपका स्वागत है। अपना गंतव्य बोलें या नीचे लिखें।',
+    welcome: 'हिंदी चुनी गई है। मार्गदर्शक एआई में आपका स्वागत है। मैं डेमो बस मार्गों से यात्रा की योजना बनाने, किराये और यात्रा समय का अनुमान बताने, बस की पुष्टि करने और पूरी यात्रा में मार्गदर्शन देने में मदद कर सकता हूँ। यह नमूना मार्गों की जानकारी है, लाइव बस डेटा नहीं। बताइए, आपको कहाँ जाना है या अपना गंतव्य नीचे लिखें।',
     destinationRecognized: 'गंतव्य समझ लिया: {destination}। सुलभ बस मार्ग खोजे जा रहे हैं।',
     routesFound: '{destination} के लिए {count} मार्ग मिले। कृपया अपना मार्ग चुनें।',
     noRoutes: '{destination} के लिए कोई मार्ग नहीं मिला। हज़रतगंज खोजकर देखें।',
@@ -107,7 +107,7 @@ export const voiceMessages = {
     micNoSpeech: 'आपकी आवाज़ सुनाई नहीं दी। कृपया फिर बोलें।',
     micNetwork: 'नेटवर्क समस्या के कारण आवाज़ पहचान रुक गई। फिर कोशिश करें या गंतव्य लिखें।',
     micError: 'आवाज़ पहचान में समस्या हुई। फिर कोशिश करें या गंतव्य लिखें।',
-    ttsUnavailable: 'क्लाउड आवाज़ नहीं चल सकी। सर्वर की TTS कुंजी, इंटरनेट और ब्राउज़र की ऑडियो अनुमति जाँचें।',
+    ttsUnavailable: 'आवाज़ नहीं चल सकी। डिवाइस की वॉइस सेटिंग और ब्राउज़र की ऑडियो अनुमति जाँचें।',
     offlineCacheStarting: 'मार्ग {route} के लिए ऑफ़लाइन नक्शे डाउनलोड हो रहे हैं।',
     offlineCacheDone: 'मार्ग {route} के ऑफ़लाइन नक्शे तैयार हैं।',
     offlineEnabled: 'ऑफ़लाइन मोड चालू है। सहेजे गए नक्शे उपयोग हो रहे हैं।',

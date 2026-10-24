@@ -133,7 +133,7 @@ useEffect(() => {
   };
 }, []);
 
-const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
+const selectLanguage = (language: VoiceLanguage, enterApp: boolean) => {
   setSpeechError('');
   setSelectedLanguage(language);
   speechSynth.setLanguage(language);
@@ -148,19 +148,8 @@ const selectLanguage = async (language: VoiceLanguage, enterApp: boolean) => {
     setShowLanguageSelection(false);
   }
 
-  let cloudTtsAvailable = cloudTtsConfigured;
-  if (!speechSynth.hasVoiceForLanguage(language) && cloudTtsAvailable === null) {
-    try {
-      cloudTtsAvailable = await fetchCloudTtsStatus();
-      setCloudTtsConfigured(cloudTtsAvailable);
-    } catch (error) {
-      console.error('Could not check cloud speech configuration:', error);
-      cloudTtsAvailable = false;
-      setCloudTtsConfigured(false);
-    }
-    speechSynth.setCloudTtsAvailable(cloudTtsAvailable);
-  }
-
+  // Speak inside the user's language-selection click; awaiting the status
+  // request first can cause browsers to block speech as autoplay.
   speechSynth.announceWelcome();
 };
   // Modals & Accessibility State

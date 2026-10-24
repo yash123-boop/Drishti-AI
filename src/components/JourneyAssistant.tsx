@@ -3,6 +3,7 @@ import { Bot, Mic, MicOff, Send, Trash2, Volume2 } from 'lucide-react';
 import { answerJourneyQuestion, getJourneyStateResponse, type JourneyAssistantContext } from '../modules/ai/journeyAssistant';
 import { speechRecognition } from '../modules/voice/speechRecognition';
 import { speechSynth } from '../modules/voice/speechSynthesis';
+import { getVoiceMessage } from '../modules/voice/voiceMessages';
 
 interface JourneyAssistantProps {
   initialQuestion?: string;
@@ -37,7 +38,7 @@ export function JourneyAssistant({
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: 0,
     role: 'assistant',
-    text: 'I can answer from Margdarshak AI’s demo routes, bus records and place budget estimates. Route and fare details are limited to the available data.',
+    text: getVoiceMessage(language, 'welcome'),
   }]);
   const messageCounter = useRef(1);
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -46,6 +47,16 @@ export function JourneyAssistant({
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [messages]);
+
+  useEffect(() => {
+    setMessages((current) =>
+      current.map((message) =>
+        message.id === 0
+          ? { ...message, text: getVoiceMessage(language, 'welcome') }
+          : message
+      )
+    );
+  }, [language]);
 
   useEffect(() => {
     if (!initialQuestion.trim()) return;
@@ -94,7 +105,7 @@ export function JourneyAssistant({
     setMessages([{
       id: 0,
       role: 'assistant',
-      text: 'Conversation cleared. Ask about a demo route, bus, fare, travel time or place budget.',
+      text: getVoiceMessage(language, 'welcome'),
     }]);
     setInput('');
     setError('');

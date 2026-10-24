@@ -107,37 +107,67 @@ class SpeechSynthesisManager {
 
     this.stop();
     this.lastSpokenText = text;
+    this.onSpeechError?.('');
     const playbackId = this.playbackId;
+    const language = this.language;
 
-    const preferredVoice = this.findVoice(this.language);
-    if (!preferredVoice) {
+    const voice = this.findVoice(language);
+    if (!this.isSupported()) {
       if (this.cloudTtsAvailable) {
-        void this.speakWithCloudTts(text, playbackId);
+        void this.speakWithCloudTts(text, playbackId, language);
+      } else {
+        this.reportSpeechUnavailable();
       }
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = this.rate;
-    utterance.pitch = this.pitch;
-    utterance.lang = this.language;
-    utterance.voice = preferredVoice;
-    this.currentUtterance = utterance;
-    utterance.onend = () => {
-      if (this.currentUtterance === utterance) {
-        this.currentUtterance = null;
-      }
-    };
-    utterance.onerror = (event) => {
-      if (this.currentUtterance === utterance) {
-        this.currentUtterance = null;
-        console.error('Speech synthesis failed:', event.error);
-      }
-    };
-    window.speechSynthesis.speak(utterance);
+    this.speakWithBrowserVoice(text, playbackId, language, voice);
   }
 
-  private async speakWithCloudTts(text: string, playbackId: number) {
+  private speakWithBrowserVoice(
+    text: string,
+    playbackId: number,
+    language: string,
+    voice?: SpeechSynthesisVoice
+  ) {
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = this.rate;
+      utterance.pitch = this.pitch;
+      utterance.lang = language;
+      if (voice) utterance.voice = voice;
+      this.currentUtterance = utterance;
+      utterance.onend = () => {
+        if (this.currentUtterance === utterance) {
+          this.currentUtterance = null;
+        }
+      };
+      utterance.onerror = (event) => {
+        if (this.currentUtterance !== utterance || playbackId !== this.playbackId) return;
+        this.currentUtterance = null;
+        console.error('Speech synthesis failed:', event.error);
+        if (this.cloudTtsAvailable) {
+          void this.speakWithCloudTts(text, playbackId, language);
+        } else {
+          this.reportSpeechUnavailable();
+        }
+      };
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Could not start browser speech synthesis:', error);
+      if (this.cloudTtsAvailable) {
+        void this.speakWithCloudTts(text, playbackId, language);
+      } else {
+        this.reportSpeechUnavailable();
+      }
+    }
+  }
+
+  private reportSpeechUnavailable() {
+    this.onSpeechError?.(this.getMessage('ttsUnavailable'));
+  }
+
+  private async speakWithCloudTts(text: string, playbackId: number, language: string) {
     let errorReported = false;
     const reportError = (error: unknown) => {
       if (errorReported) return;
@@ -150,7 +180,7 @@ class SpeechSynthesisManager {
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, language: this.language }),
+        body: JSON.stringify({ text, language }),
       });
       if (!response.ok) {
         throw new Error(`Cloud speech request failed with HTTP ${response.status}.`);

@@ -11,6 +11,7 @@ import { evaluateStopProgress } from '../journey/stopManager';
 import { analyzeDemoBusBoard } from '../ai/busDetection';
 import { findJourneyOptions, findNearestDemoStop } from '../routes/journeyPlanner';
 import { answerJourneyQuestion, getJourneyStateResponse, type JourneyAssistantContext } from '../ai/journeyAssistant';
+import { getVoiceMessage } from '../voice/voiceMessages';
 import type { OCRResult } from '../../types/transit';
 import type { TestScenarioResult } from '../../types/transit';
 
@@ -279,6 +280,44 @@ export function runValidationSuite(): TestScenarioResult[] {
     results.push({
       id: 'test-9-context-aware-assistant',
       name: 'Voice Assistant: Journey-State-Aware Guidance',
+      passed: false,
+      details: `Error: ${err.message}`,
+    });
+  }
+
+  // Test 10: Hindi and English chatbot responses remain in the selected language
+  try {
+    const englishTrip = answerJourneyQuestion(
+      'How can I go from Charbagh Railway Station to Hazratganj?',
+      undefined,
+      'en-IN'
+    );
+    const hindiTrip = answerJourneyQuestion(
+      'चारबाग से हजरतगंज कैसे जाऊँ?',
+      undefined,
+      'hi-IN'
+    );
+    const englishWelcome = getVoiceMessage('en-IN', 'welcome');
+    const hindiWelcome = getVoiceMessage('hi-IN', 'welcome');
+    const passed =
+      englishTrip.includes('From Charbagh') &&
+      hindiTrip.includes('BUS-101') &&
+      hindiTrip.includes('डेमो मार्ग') &&
+      !hindiTrip.includes('Estimated bus fare') &&
+      englishWelcome.includes('plan a trip') &&
+      hindiWelcome.includes('यात्रा की योजना');
+    results.push({
+      id: 'test-10-bilingual-chat',
+      name: 'Voice Assistant: English and Hindi Trip Planning',
+      passed,
+      details: passed
+        ? 'The welcome and trip-planning answer are available in English and Hindi without mixing languages.'
+        : `Language-specific welcome or trip-planning output was incorrect: ${hindiTrip}`,
+    });
+  } catch (err: any) {
+    results.push({
+      id: 'test-10-bilingual-chat',
+      name: 'Voice Assistant: English and Hindi Trip Planning',
       passed: false,
       details: `Error: ${err.message}`,
     });
